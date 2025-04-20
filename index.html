@@ -28,26 +28,27 @@
 <d-byline></d-byline>
 <d-article>
   <p>
-    Modern AI models such as Stable Diffusion and ChatGPT demonstrate remarkable
-    and often surprising capabilities. Yet, their inner workings remain largely
-    opaque. These systems are often described as "black boxes" as we can easily
-    observe their inputs and outputs, but their inner workings are hidden and
-    mysterious. As AI models are increasingly deployed across real-world
-    applications, their black box nature is becoming increasingly untennable.
-    The field of interptability aims to demistify these sytems and provide
-    insight into their internal mechanisms.
+    Modern AI systems such as Stable Diffusion and ChatGPT demonstrate
+    remarkable and often surprising capabilities. Yet, their inner workings
+    remain largely opaque. These systems are often described as "black boxes" as
+    we can easily observe their inputs and outputs, but their inner workings are
+    hidden and mysterious. As AI systems are increasingly deployed across
+    real-world applications, their black box nature is becoming increasingly
+    untennable. The field of interptability aims to demistify these sytems and
+    provide insight into their internal mechanisms.
   </p>
   <p>
     But how did this come to be? How did researchers create programs that they
-    themselves didn't understand? To answer that, we have to go back.
+    themsleves don't understand? To answer that, it's useful to go through the
+    historical development of AI.
   </p>
   <p>
     Despite its recent flood of attention, AI was largely dismissed as an
     unserious field for much of its existence. Since the advent of computers in
     the 1950s, ambitious programmers promsied we were on the cusp of building
     systems smarter than us. The loose term "AI" emerged to encompass programs
-    that mimicked human intelligence in some way. But time and time again, those
-    promises fell flat.
+    that mimic human intelligence. But time and time again, those promises fell
+    flat.
   </p>
   <p>
     The core challenge of AI is the rigidity of computers. Computer chips
@@ -79,147 +80,386 @@
   <p>
     Still, some engineers envisioned machine intelligence radically differently.
     They pictured programs that could learn from examples instead of rely on
-    human instruction. In 1957, Frank Rosenblatt unveiled the perceptron, a
-    simple model rougly analogous to neurons in the brain. The system took in
-    binary inputs with each input connected to the output by a corresponding
-    "synapse" (often called a weight) that determined its influence on the final
-    binary decision. Rossenblatt demonstrated how his machine could differntiate
-    basic shapes on a grid, such as "T"s from "J"s, given the right weights.
-    Additionally, Rosenblatt proposed a simple learning rule that allowed his
-    model to "learn" its weights on its own through a handful of examples.
+    human instruction. In 1957, Frank Rosenblatt unveiled the
+    <i>perceptron</i> (today commonly referred to as an artificial neuron, or
+    just simply a neuron), a simple model very rougly analogous to neurons in
+    the brain. The system took in binary inputs, each linked to the output
+    through a corresponding "synapse" (often called a <i>weight</i>), which
+    determined how strongly that input influenced the final binary
+    decision.<d-footnote
+      >If you're perceptive, you may have noticed that Rossenblatt's artifical
+      neurons are identicial to a linear function combined with a decision
+      threshold. At the time, this approach was more novel than it seems now as
+      linear algebra wasn't nearly as ubiquitous as it is today.</d-footnote
+    >
+    Rosenblatt demonstrated how his machine could differntiate basic shapes on a
+    grid, such as "T"s from "J"s, given the right weights. Additionally,
+    Rosenblatt proposed a simple learning rule that allowed his model to "learn"
+    its weights on its own through a handful of examples.
   </p>
   <p>
-    Rossenblatt's rule worked as follows: for each example input, the
-    corresponding weights are either increased or decreased by small constant
-    ammount depending on the desired output. Over time, these small corrections
-    would accumulate, gradually pushing the model toward the correct behavior.
-    In the frenzy of post-WWII tech optimism, the discovery generated a lot of
-    excitement. The New York Times proclaimed that Rosenblatt's perceptron would
-    be able to "walk, talk, see, write, reproduce itself, and be conscious of
-    its existence".
+    Rosenblatt's rule worked as follows: For each input example, the system
+    updates the weights depending on the type of example—if it's a positive
+    example (a behavior you want), the corresponding weights are slightly
+    increased; if it's a negative example (a behavior you don't want), the
+    weights are slightly decreased. Over time, these small corrections would
+    accumulate, gradually pushing the model toward the correct behavior. This
+    paridigm of the computer "learning" by itself spawned the term
+    <i>Machine Learning</i> (ML). In the frenzy of post-WWII tech optimism, the
+    discovery generated a lot of excitement.
+    <i>The New York Times</i> proclaimed that Rosenblatt's perceptron would be
+    able to "walk, talk, see, write, reproduce itself, and be conscious of its
+    existence".
   </p>
   <p>
-    In hindsight, Rossenblatt's approach seems like the obvious way forward.
+    In hindsight, Rosenblatt's approach seems like the obvious way forward.
     After all, isn't some kind of learning how the brain works? However,
-    Rossenblatt's methods had major limitations. His simple perceptron model
-    could only learn the most trivial tasks. For anything complicated, his rule
-    would end up in an endless loop. To counter this, Rossenblatt proposed
-    networks composed of multiple perceptrons, but he was unable to find a more
-    general learning rule. Additionally, at the time, scientists had no real
-    understanding of how learning worked in the brain,<d-footnote
-      >Which we still don't</d-footnote
-    >let alone how to replicate it in a machine. Even with all the challenges of
-    writing programs by hand, they at least offered a clear path forward. You
-    could follow the logic, fix mistakes, and know exactly what the system was
-    doing-none of which was true for these early learning models. The idea was
-    bold, but the technology was crude, and interest soon fizzled out.
+    Rosenblatt's methods had major limitations. His simple perceptron model
+    could only learn the most trivial tasks. For anything more complicated, his
+    rule would end up in an endless loop.<d-footnote
+      >More specifically, Rosenblatt's perceptron could only learn
+      linearly-separable patterns, meaning the space of inputs could be divided
+      into classes using a straight line. A classic example of a problem it
+      couldn't solve is the
+      <a href="https://en.wikipedia.org/wiki/XOR_gate">XOR</a>
+      function, famously highlighted by Marvin Minsky and Seymour Papert in
+      their 1969 book <i>Perceptrons</i>.<d-cite
+        bibtex-key="minsky1969perceptrons"
+      ></d-cite>
+    </d-footnote>
+    To counter this, Rosenblatt proposed networks composed of multiple
+    perceptrons. While these networks of neurons (called neural networks) , but
+    he was unable to find a more general learning rule. Additionally, at the
+    time, scientists had no real understanding of how learning worked in the
+    brain,<d-footnote>Which we still don't</d-footnote>let alone how to
+    replicate it in a machine. Even with all the challenges of writing programs
+    by hand, they at least offered a clear path forward. You could follow the
+    logic, fix mistakes, and know exactly what the system was doing—none of
+    which was true for learning methods. The idea was bold, but the technology
+    was crude, and interest soon fizzled out.
   </p>
   <p>
-    Still, a small group of dedicated researchers pushed Rossenblatt's work
+    Still, a small group of dedicated researchers pushed Rosenblatt's work
     forward. The first real progress toward a more general learning rule came in
     1960, when Bernard Widrow and Marcian Hoff introduced a new approach.
-    Instead of Rossenblatt's simple update rule, they used calculus to derive a
-    more precise method for training a single perceptron-what become known as
-    the Least Mean Squares (LMS) algorithm. This method closely resembles modern
-    techniques, but it stopped short of providing a general learning rule. That
-    breakthrough wouldn't come until 1986, when Backpropagation was first
-    introduced. <d-footnote>kind of</d-footnote>.
+    Instead of Rosenblatt's simple update rule, they used calculus to derive a
+    more precise method for training a single perceptron—what become known as
+    the <i>Least Mean Squares</i> (LMS) algorithm.<d-footnote
+      >Explain</d-footnote
+    >
+    This method closely resembles modern techniques, but it stopped short of
+    providing a general learning rule. That breakthrough wouldn't come until
+    1986, with the introduction of <i>backpropegation</i>.
+    <d-footnote>kind of</d-footnote>
   </p>
   <p>
     Backpropagation is very similar to the LMS algorithm. A key insight made in
     the time between LMS and Backpropagation was to allow perceptrons to take on
-    a continuous range of values rather than just being on or off. This allows
-    for the effect of earlier perceptrons on later neurons to be quantified with
-    calculus. Additionally, the method's namesake forward-backward approach
-    reuses intermediate results from the forward pass to efficiently compute
-    weight updates during the backward pass. Still, many researchers were
-    skeptical. It was widely believed that the method simply didn't work in
+    a continuous range of values rather than just being "on" or "off". This
+    allows the effect of earlier perceptrons on later neurons to be quantified
+    using calculus. Additionally, the method's namesake forward-backward
+    approach reuses intermediate results from the forward pass to efficiently
+    compute weight updates during the backward pass. Still, many researchers
+    were skeptical. It was widely believed that the method simply didn't work in
     practice.
   </p>
   <p>
-    However, the success of ML in the 90s would show that backpropagation could
-    in fact work. During this time, researchers developed systems for
-    hisorically challenging problems like handwriting recognition and speech
-    processing. While a major milestone in the field, these programs still
-    didn't awe the public. The tasks still felt narrow and robotic-useful, but a
-    far cry from human intelligence. While it was accepted that backpropagation
-    could solve these simpler problems, it was still doubtful that these methods
-    would allow for more general intelligence. Surely the brain's intelligence
-    can't be mimicked through a simple update rule?
+    However, the success of ML in the 1990s would show that backpropagation
+    could, in fact, work. During this time, researchers developed systems for
+    hisorically challenging problems like handwriting and speech recognition.
+    While a major milestone in the field, these programs still didn't captivate
+    the public. The tasks felt narrow and robotic—useful, but a far cry from
+    human intelligence. While it was accepted that backpropagation could solve
+    these simpler problems, it was still doubtful that these methods would allow
+    for more general intelligence. Surely the brain's functions couldn't be
+    mimicked through a simple update rule?
   </p>
   <p>
-    That changed in 2012. A deep convolutional neural network called AlexNet
-    blew past the competition in the ImageNet challenge, a high-profile
-    benchmark for image-recognition. While other systems relied on human
-    engineering and carefully tuned mathematical tricks, AlexNet was trained
-    end-to-end using nothing more than backpropagation. And it didn't just
-    win-it crushed the field. So what changed? Alexnet still used the same core
-    ideas that researchers had know about since the 80s and 90s. The only
-    difference was scale. Alexnet was orders of magnitude larger than previous
-    networks.
+    All of that changed in 2012. An ML system <i>AlexNet</i> blew past the
+    competition in the <i>ImageNet</i> challenge, a high-profile test for image
+    recognition. While other systems relied on human engineering and carefully
+    tuned mathematical tricks, AlexNet was created using nothing more than
+    backpropagation. And it didn't just win—it crushed the field. So what
+    changed? Alexnet still used the same core ideas that researchers had know
+    about since the '80s and '90s. The only difference was scale. AlexNet was
+    orders of magnitude larger than previous systems.
   </p>
   <p>
-    It's hard to understate what a watershed moment AlexNet was for AI. Once
+    It's hard to overstate what a watershed moment AlexNet was for AI. Once
     dismissed as unreliable, backpropagation had become not just accepted, but
     revered—almost mythologized. What kind of fantastical algorithms had it
     found that beat the competition so badly? What did backpropagation know that
-    we didn't? These quesitons spurred the dawn of interptability efforts. Once
-    the initial shock faded, another realization quickly set in: this was not
-    the end. If a network this size could achieve results like that, what about
-    a model 10x as large? 100x? A million times larger?
+    we didn't? These quesitons spurred the dawn of interptability efforts.
   </p>
   <p>
-    The AI landscape since AlexNet has been pure chaos as researchers scramble
-    to put together bigger and bigger models. In 2014, VGG demonstrated another
-    giant leap in image-recognition. The next year, ResNet introduced skip
-    connections allowing networks to go hundreds of layers deep without
-    collapsing. Then in 2017, transformers brought the AI revolution to
-    language. Models like BERT (2018), GPT-2 (2019), and GPT-3 (2022). In 2022,
-    this wave reached the public with the release of ChatGPT.
+    Just as building AI systems once seemed impossible, interpreting them seemed
+    equally daunting. Instead of a human-understable programs like this:
+    <d-code block language="python">&#10;x=5&#10;y=3&#10;print(x+y)</d-code
+    >Researchers are instead faced with programs that look like this:
+    <img src="numbas.png" width="100%" />
+    <figcaption>
+      These are 297 of AlexNet's weights. AlexNet has 61 million weights.
+      Today's systems can have upwards of 1 trillion.
+    </figcaption>
   </p>
   <p>
-    While there were earlier attempts to peek inside neural networks, the first
-    real stab at gaining a deeper, mechanistic understanding came in 2020 with
-    the launch of the Distill Circuits thread. Researchers didn't just ask what
-    individual neurons responded to—they examined how neurons composed into
-    larger circuits that performed meaningful functions. The thread found early
-    success identifying components like curve detectors in vision models,
-    sparking renewed interest in the possibility of truly understanding deep
-    networks. But as language models began to dominate the landscape, much of
-    the field's attention shifted toward them—driven in part by security
-    concerns, model misuse, and their increasingly unpredictable behavior. These
-    models presented their own unique challenges. In response, Anthropic
-    launched the Transformer Circuits thread, a kind of spiritual successor to
-    Distill, aimed at reverse-engineering the inner workings of language models
-    layer by layer.
+    After numerous failed attempts to understand models like AlexNet, the first
+    interptability successes came in 2020 with the launch of the Distill
+    Circuits thread FOOTNOTE. Researchers mannaged to find curve detection
+    mechanisms as well as detectors for more complex objects like dog ears,
+    sparking renewed interest in the possibility of truly understanding these
+    systems.
+  </p>
+  <p>
+    Yet while interptability researchers struggled to understand AlexNet, AI
+    researchers raced to create more and more complicated systems. Notably,
+    OpenAI's ChatGPT models garnared a huge ammount of attention from the
+    general public, spurring an avalanche of investment toward even more
+    powerful systems.
+  </p>
+  <p>
+    As a result, much of the field's focus shifted toward these new language
+    models. These models presented their own unique challenges for
+    interpertability. To address these challenges, Anthropic launched the
+    Transformer Circuits Thread, a kind of spiritual successor to Distill
+    Circuits Thread, aimed at reverse-engineering the inner workings of language
+    models layer by layer.
   </p>
   <p>
     While the large-scale deployment of language models has motivated serious
-    efforts to understand them, other modalities—such as music—remain
-    mechanistically under-studied. The goal of this paper is to apply some of
-    these established interptability techniques to this new domain.
+    efforts to understand them, other modalities such as music remain
+    understudied. The goal of this paper is to apply these established
+    interptability techniques to this new domain.
   </p>
+  <h1>A Brief Introduction to ML</h1>
+  <p>
+    As I wanted to make this project as self-contained as possible, I decided to
+    include an introduction to ML. If you're already familiar with the basics of
+    ML, feel free to skip past this section. If you're not, I would urge you to
+    still give this paper a shot. ML is much more accessible than commonly
+    thought and requires very little math. The only assumptions I'll be making
+    are that you comfortable with concepts such as functions and reading basic
+    algebraic expressions.
+  </p>
+  <p>
+    Before getting to the details, what is ML at a high level? PARAGRAPH HERE
+  </p>
+  <p>
+    We'll start by borriwing two concepts from math: gradients and linear
+    functions. I'll explain these concepts without reference to ML to why we'll
+    need them, but there'll usefulness will become apparent shortly. From there,
+    I'll explain how AI models are constructed and trained. Finally, we'll go
+    over the transformer architecture which is essential to modern AI.
+  </p>
+  <h3>Gradients</h3>
+  <p>
+    Before going over gradients, we need to cover derivatives. Derivatives
+    measure the "instantenous rate of change" of a function at a
+    point.<d-footnote
+      >If this concept of instantenous rate of change makes you feel uneasy,
+      don't worry! Even the founders of calculus—Newton and Leibniz—struggled
+      with how to rigorously define it. Their early work relied on intuition and
+      clever reasoning, but it took mathematicians many years to fully formalize
+      the idea. The modern theory of calculus uses the concept of
+      <a href="https://en.wikipedia.org/wiki/Limit_of_a_function">limits</a>
+      to define derivatives.</d-footnote
+    >
+    We write the derivitive of <d-math>f(x)</d-math> as
+    <d-math> \frac{df}{dx} </d-math>. Here, the letter d means "a small change
+    in". As such, this notation can be read as "a small change in f divded by a
+    small change in x".
+  </p>
+  <p>
+    A physical example is often helpful. Let <d-math>f(t)</d-math> describe the
+    position of a car at a certain time. Then the derivative
+    <d-math>\frac{df}{dt}</d-math> describes the velocity of the car. Here, the
+    derivative acts as a sort of mathematical "speedometer".
+  </p>
+  <p>
+    But how do we actually calculate derivatives? Well there's no magic bullet.
+    Instead, mathematicians have derived the derivative for a bunch of simple
+    functions. For example, the derivitive of <d-math>x^2</d-math> happens to be
+    <d-math>2x</d-math> and the derivitive of <d-math>sin(x)</d-math> happens to
+    be <d-math>cos(x)</d-math>. But how would we figure out the derivative of a
+    more complicated function such as <d-math>sin(x^2)</d-math>? Well, given a
+    small change in <d-math>x</d-math> called <d-math>dx</d-math>, the
+    derivative tells us that corresponding small change
+    <d-math>d(x^2)</d-math> will be <d-math>2xdx</d-math>. We similarly know
+    that a small change <d-math>dy</d-math> induces a change of
+    <d-math>cos(y)dy</d-math> in <d-math>sin(y)</d-math>. But in our case,
+    <d-math>y=x^2</d-math> and <d-math>dy=2xdx</d-math>. Thus, by substitution,
+    <d-math>sin(x^2)=cos(x^2)2x</d-math>. This is called the chain rule and is
+    essential for computing derivatives. Simiarly, there exists a sum rule
+    (which as it turns out just involves adding together the derivatives) and a
+    product rule. By having a large set of known derivatives and using these
+    composition rules, it is possible to figure out the derivative for a huge
+    range of functions.
+  </p>
+  <p>
+    Extending this notion of a derivative to functions more than one input is
+    trival. We simply use our compostion rules and treat the other variables as
+    constant numbers that can vary. These derivatives are called
+    <i>partial derivatives</i> to indicate that they tell only part of the story
+    and get a new notation: <d-math>\frac{\partial f}{\partial x}</d-math>. The
+    <i>gradient vector</i> is simply the collection of partial derivatives and
+    is written as <d-math>\nabla f(x)</d-math>.
+  </p>
+  <h3>Linear Functions</h3>
+  <p>
+    You probably remember this famous equation:
+    <d-math>y=mx+b</d-math>. When you graph it, the result is a straight line.
+    This equation can be written in function form as <d-math>f(x)=mx+b</d-math>,
+    which is known as a "linear function" (well, sort of—keep reading). Can we
+    extend this notion of a linear functions beyond 2D?
+  </p>
+  <p>
+    When mathematicians extend a concept beyond its intuitive definition, they
+    typically seek to preserve its core defining properties. For lines, the key
+    property is a constant rate of change—they're straight. You might
+    instinctively reach for derivatives to codify this property, but there's a
+    simpler approach.
+  </p>
+  <p>
+    When <d-math>b=0</d-math>, a function like
+    <d-math>f(x)=mx</d-math> satisfies two important properties:
+  </p>
+  <ul>
+    <li>
+      <strong>Additivity:</strong> <d-math>f(x + y) = f(x) + f(y)</d-math>,
+      since <d-math>m(x + y) = mx + my</d-math>
+    </li>
+    <li>
+      <strong>Homogeneity:</strong> <d-math>f(kx) = kf(x)</d-math>, because
+      <d-math>m(kx) = k(mx)</d-math>
+    </li>
+  </ul>
+  <p>
+    These are the defining traits of what mathematicians call a linear function.
+    Since this definition is simple and convenient, mathematicians opted to
+    strip the title of linear function from functions where b is non-zero and
+    instead call such functions "affine".
+  </p>
+  <p>
+    Before considering functions in higher dimensions, we need a way to
+    represent inputs and outputs that have more than one number. This is where
+    the concept of a <i>vector</i> comes in. A vector is simply an ordered list
+    of values such as <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math>. We
+    define the addition of two vectors and the multiplication of a vector and a
+    number (often called a scalar in this context) as follows:
+  </p>
+  <div style="text-align: center; padding-bottom: 1em">
+    <span style="display: inline-block; margin-right: 2em">
+      <d-math>
+        \begin{bmatrix}a\\b\end{bmatrix} + \begin{bmatrix}c\\d\end{bmatrix} =
+        \begin{bmatrix}a+c\\b+d\end{bmatrix}
+      </d-math>
+    </span>
+    <span style="display: inline-block">
+      <d-math>
+        a\begin{bmatrix}x\\y\end{bmatrix} = \begin{bmatrix}ax\\ay\end{bmatrix}
+      </d-math>
+    </span>
+  </div>
+  <p>
+    The most important vectors are the <i>basis vectors</i>. In two dimensions,
+    these are the vectors <d-math>\begin{bmatrix}1\\0\end{bmatrix}</d-math> and
+    <d-math>\begin{bmatrix}0\\1\end{bmatrix}</d-math>. The basis vectors in
+    higher dimensions follow the same idea: each one has a single 1 in one
+    position and 0s everywhere else. Where n denotes the dimension we're working
+    in, let's label these basis vectors as <d-math>e_1, e_2, ..., e_n</d-math>.
+    Notice that these basis vectors allow us to write every vector in the form
+    <d-math>a_1e_1 + a_2e_2 + ... + a_ne_n</d-math>. For instance,
+    <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math> can be written as
+    <d-math>3e_1+2e_2.</d-math>
+
+    Now notice, if we have a linear function f:
+  </p>
+  <d-math style="text-align: center; padding-bottom: 1em"
+    >f(a_1e_1 + a_2e_2 + ... + a_ne_n) = a_1f(e_1) + a_2f(e_2) + ... + a_nf(e_n)
+  </d-math>
+  <p>
+    This follows from addivitiy and homogeneity. Thus, every linear function is
+    completely defined by where it sends the basis vectors.
+  </p>
+
+  <p>
+    The previous result motivates the introduction of matricies. A matrix is
+    simply a convenient way to write out a linear function. The first collumn of
+    a matrix specifies where <d-math>e_1</d-math> is sent, the second collumn of
+    a matrix specifies where <d-math>e_2</d-math> is sent and so on. For
+    example, the following matrix:<d-math
+      >\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}</d-math
+    >
+    sends <d-math>e_1</d-math> to <d-math>(1, 3)</d-math> and
+    <d-math>e_2</d-math> to <d-math>(2, 4)</d-math>.
+  </p>
+  <p>
+    To apply the linear function given by a matrix to a vector, multiply each
+    column vector of the matrix by the corresponding component of the input
+    vector, then add the results together.
+  </p>
+  <p>For example, suppose we want to apply the matrix</p>
+  <d-math style="padding-bottom: 1em">
+    A = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
+  </d-math>
+  <p>to the vector</p>
+  <d-math style="padding-bottom: 1em">
+    \vec{v} = \begin{bmatrix} 5 \\ 6 \end{bmatrix}
+  </d-math>
+  <p>This is equivalent to computing:</p>
+  <d-math style="padding-bottom: 1em">
+    5 \begin{bmatrix}1 \\ 3\end{bmatrix} + 6 \begin{bmatrix}2 \\ 4\end{bmatrix}
+    = \begin{bmatrix}5 \\ 15\end{bmatrix} + \begin{bmatrix}12 \\ 24\end{bmatrix}
+    = \begin{bmatrix}17 \\ 39\end{bmatrix}
+  </d-math>
+  <p>
+    This procedure is called matrix multiplication. We can write the procedure
+    of applying the matrix to the vector as follows:
+  </p>
+  <d-math style="padding-bottom: 1em">
+    \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 \\ 6
+    \end{bmatrix} = \begin{bmatrix} 17 \\ 19 \end{bmatrix}</d-math
+  >
+  <p>
+    Note that the matrix must always be on the left. This mirrors our function
+    notation <d-math>f(x)</d-math> where the input sits to the right of the
+    function.
+  </p>
+  <h3>How are ML models composed?</h3>
+  <p>
+    Before we dive into how these machines "learn", we must first investigate
+    their structure. The core idea of ML is to start with a "scaffodling"
+    function that has a number of parameters. What kind of scaffolding function
+    to choose? Expressive and easy to compute
+  </p>
+
   <h1>Setup</h1>
   <p>
-    As some background for the paper, I'll assume familiarity with the basics of
-    ML and transformer models. If these concepts are new, you can check at
-    3Blue1Brown's excellent
+    I aimed to keep the introduction assumption-free so that readers could grasp
+    the overall idea of the paper. However, the rest of the paper will require
+    some prior knowledge. Specifically, I'll assume you're familiar with the
+    fundamentals of machine learning and transformer models. If these concepts
+    are new, you can check at 3Blue1Brown's excellent
     <a
       href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
       >video series</a
     >
-    covering these topics.
+    covering these topics. I'll do my best to introduce the interptability
+    methods as they come up, but it might be helpful to also refer to the
+    Distill Thread and perhaps also the Anthropic Thread. I think the most
+    fruitful papers to read are idk bout that actually
   </p>
   <p>
-    To begin, we need to select a suitable model for our investigation. Among
+    To start, we need to select a suitable model for our investigation. Among
     open-source music generation models, Google's MusicLM and Meta's MusicGen
     are both transformer-based and represent the current state of the art. While
     their performance is broadly comparable, MusicGen holds a slight edge in
     quality and therefore will serve as the object of our study.
   </p>
   <p>
-    There are some key differences between the modalities of text and sound. The
-    most obvious is that text is discrete will sound is continuous.
+    There are some key differences between the modalities of text and sound. On
+    computers, text is stored via the unicode standard which assigns a number to
+    each character.
   </p>
 </d-article>
 
@@ -262,13 +502,3 @@
   </p>
 </d-appendix>
 <d-bibliography src="bibliography.bib"></d-bibliography>
-
-<script type="text/bibliography">
-  @article{gregor2015draw,
-    title={DRAW: A recurrent neural network for image generation},
-    author={Gregor, Karol and Danihelka, Ivo and Graves, Alex and Rezende, Danilo Jimenez and Wierstra, Daan},
-    journal={arXivreprint arXiv:1502.04623},
-    year={2015},
-    url={https://arxiv.org/pdf/1502.04623.pdf}
-  }
-</script>
