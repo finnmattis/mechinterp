@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
 <link rel="stylesheet" href="styles.css" />
-<script src="https://distill.pub/template.v2.js"></script>
+<script src="template.v2.js"></script>
 <d-front-matter>
   <script type="text/json">
     {
@@ -27,17 +27,43 @@
 </d-title>
 <d-byline></d-byline>
 <d-article>
+  <d-toc></d-toc>
   <p>
     Modern AI systems such as Stable Diffusion and ChatGPT demonstrate
     remarkable and often surprising capabilities. Yet, their inner workings
     remain largely opaque. These systems are often described as "black boxes" as
     we can easily observe their inputs and outputs, but their inner workings are
-    hidden and mysterious. As AI systems are increasingly deployed across
-    real-world applications, their black box nature is becoming increasingly
-    untennable. The field of interptability aims to demistify these sytems and
-    provide insight into their internal mechanisms.
+    hidden and mysterious. This opacity raises a number of concerns.
   </p>
   <p>
+    First, there's the issue of fairness. Toady, AI systems are used to filter
+    through masses of job applications but do these systems exhibit bias? Do
+    they unfairly favor candidates based on race, sex, or other factors? Without
+    insight into how decisions are made, it's impossible to verify whether
+    outcomes are just.
+  </p>
+  <p>
+    A second conern is reliabiltiy. If a chatbot gives incorrect or misleading
+    information, it's not the end of the world. But when AI is entrusted with
+    more responsibility such as guiding autonomous vehicles or making healthcare
+    reccomendations, the consequences of failure are severe. How can we ensure
+    these systems behave relibably in unfamiliar or high-stakes situations, and
+    that rare edge cases won't cause them to fail?
+  </p>
+  <p>
+    A third concern is security. One of the most pressing threats to today's
+    models is the risk of <i>jailbreaks</i>. Returning to the job application
+    example: what if a candidate subtly crafted their resume to mannipulate the
+    AI evaluator into giving them an unjustifiably high score? By better
+    understanding the internal mechanisms of these models, we can develop tools
+    and techniques to detect, prevent, and mitigate such attacks more
+    effectively.
+  </p>
+  <p>
+    In short, the ___ of these models makes in harder to trust their decisions
+    Beyond these more practical concerns, there's also an element of scientific
+    cursiotiy. The field of interpretability has emerged in response, aiming to
+    demystify these systems and provide insight into their internal mechanisms.
     But how did this come to be? How did researchers create programs that they
     themsleves don't understand? To answer that, it's useful to go through the
     historical development of AI.
@@ -87,10 +113,11 @@
     through a corresponding "synapse" (often called a <i>weight</i>), which
     determined how strongly that input influenced the final binary
     decision.<d-footnote
-      >If you're perceptive, you may have noticed that Rossenblatt's artifical
-      neurons are identicial to a linear function combined with a decision
-      threshold. At the time, this approach was more novel than it seems now as
-      linear algebra wasn't nearly as ubiquitous as it is today.</d-footnote
+      >If you're familiar with Linear Algebra, you may have noticed that
+      Rossenblatt's artifical neurons are identicial to a linear function
+      combined with a decision threshold. At the time, this approach was more
+      novel than it seems now as LA wasn't nearly as ubiquitous as it is
+      today.</d-footnote
     >
     Rosenblatt demonstrated how his machine could differntiate basic shapes on a
     grid, such as "T"s from "J"s, given the right weights. Additionally,
@@ -235,11 +262,9 @@
   <p>
     As I wanted to make this project as self-contained as possible, I decided to
     include an introduction to ML. If you're already familiar with the basics of
-    ML, feel free to skip past this section. If you're not, I would urge you to
-    still give this paper a shot. ML is much more accessible than commonly
-    thought and requires very little math. The only assumptions I'll be making
-    are that you comfortable with concepts such as functions and reading basic
-    algebraic expressions.
+    ML, feel free to skip past this section. The only prior knowledge required
+    for this paper is that you comfortable reading basic algebraic expressions
+    and fundemental concepts like functions.
   </p>
   <p>
     Before getting to the details, what is ML at a high level? PARAGRAPH HERE
