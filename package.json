@@ -1,0 +1,25 @@
+{
+  "name": "mechinterp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "template.v2.js",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "scripts": {
+    "start": "http-server -p 8080 .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petermattis/mechinterp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/petermattis/mechinterp/issues"
+  },
+  "homepage": "https://github.com/petermattis/mechinterp#readme"
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
 <link rel="stylesheet" href="styles.css" />
-<script src="https://distill.pub/template.v2.js"></script>
+<script src="template.v2.js"></script>
 <d-front-matter>
   <script type="text/json">
     {
@@ -27,6 +27,7 @@
 </d-title>
 <d-byline></d-byline>
 <d-article>
+  <d-toc></d-toc>
   <p>
     Modern AI systems such as Stable Diffusion and ChatGPT demonstrate
     remarkable and often surprising capabilities. Yet, their inner workings
@@ -86,12 +87,10 @@
     the brain. The system took in binary inputs, each linked to the output
     through a corresponding "synapse" (often called a <i>weight</i>), which
     determined how strongly that input influenced the final binary
-    decision.<d-footnote
-      >If you're perceptive, you may have noticed that Rossenblatt's artifical
+    decision.<d-footnote>If you're perceptive, you may have noticed that Rossenblatt's artifical
       neurons are identicial to a linear function combined with a decision
       threshold. At the time, this approach was more novel than it seems now as
-      linear algebra wasn't nearly as ubiquitous as it is today.</d-footnote
-    >
+      linear algebra wasn't nearly as ubiquitous as it is today.</d-footnote>
     Rosenblatt demonstrated how his machine could differntiate basic shapes on a
     grid, such as "T"s from "J"s, given the right weights. Additionally,
     Rosenblatt proposed a simple learning rule that allowed his model to "learn"
@@ -116,16 +115,13 @@
     After all, isn't some kind of learning how the brain works? However,
     Rosenblatt's methods had major limitations. His simple perceptron model
     could only learn the most trivial tasks. For anything more complicated, his
-    rule would end up in an endless loop.<d-footnote
-      >More specifically, Rosenblatt's perceptron could only learn
+    rule would end up in an endless loop.<d-footnote>More specifically, Rosenblatt's perceptron could only learn
       linearly-separable patterns, meaning the space of inputs could be divided
       into classes using a straight line. A classic example of a problem it
       couldn't solve is the
       <a href="https://en.wikipedia.org/wiki/XOR_gate">XOR</a>
       function, famously highlighted by Marvin Minsky and Seymour Papert in
-      their 1969 book <i>Perceptrons</i>.<d-cite
-        bibtex-key="minsky1969perceptrons"
-      ></d-cite>
+      their 1969 book <i>Perceptrons</i>.<d-cite bibtex-key="minsky1969perceptrons"></d-cite>
     </d-footnote>
     To counter this, Rosenblatt proposed networks composed of multiple
     perceptrons. While these networks of neurons (called neural networks) , but
@@ -144,9 +140,7 @@
     1960, when Bernard Widrow and Marcian Hoff introduced a new approach.
     Instead of Rosenblatt's simple update rule, they used calculus to derive a
     more precise method for training a single perceptron—what become known as
-    the <i>Least Mean Squares</i> (LMS) algorithm.<d-footnote
-      >Explain</d-footnote
-    >
+    the <i>Least Mean Squares</i> (LMS) algorithm.<d-footnote>Explain</d-footnote>
     This method closely resembles modern techniques, but it stopped short of
     providing a general learning rule. That breakthrough wouldn't come until
     1986, with the introduction of <i>backpropegation</i>.
@@ -194,13 +188,13 @@
   <p>
     Just as building AI systems once seemed impossible, interpreting them seemed
     equally daunting. Instead of a human-understable programs like this:
-    <d-code block language="python">&#10;x=5&#10;y=3&#10;print(x+y)</d-code
-    >Researchers are instead faced with programs that look like this:
+    <d-code block language="python">&#10;x=5&#10;y=3&#10;print(x+y)</d-code>Researchers are instead faced with programs
+    that look like this:
     <img src="numbas.png" width="100%" />
-    <figcaption>
-      These are 297 of AlexNet's weights. AlexNet has 61 million weights.
-      Today's systems can have upwards of 1 trillion.
-    </figcaption>
+  <figcaption>
+    These are 297 of AlexNet's weights. AlexNet has 61 million weights.
+    Today's systems can have upwards of 1 trillion.
+  </figcaption>
   </p>
   <p>
     After numerous failed attempts to understand models like AlexNet, the first
@@ -255,15 +249,13 @@
   <p>
     Before going over gradients, we need to cover derivatives. Derivatives
     measure the "instantenous rate of change" of a function at a
-    point.<d-footnote
-      >If this concept of instantenous rate of change makes you feel uneasy,
+    point.<d-footnote>If this concept of instantenous rate of change makes you feel uneasy,
       don't worry! Even the founders of calculus—Newton and Leibniz—struggled
       with how to rigorously define it. Their early work relied on intuition and
       clever reasoning, but it took mathematicians many years to fully formalize
       the idea. The modern theory of calculus uses the concept of
       <a href="https://en.wikipedia.org/wiki/Limit_of_a_function">limits</a>
-      to define derivatives.</d-footnote
-    >
+      to define derivatives.</d-footnote>
     We write the derivitive of <d-math>f(x)</d-math> as
     <d-math> \frac{df}{dx} </d-math>. Here, the letter d means "a small change
     in". As such, this notation can be read as "a small change in f divded by a
@@ -374,8 +366,8 @@
 
     Now notice, if we have a linear function f:
   </p>
-  <d-math style="text-align: center; padding-bottom: 1em"
-    >f(a_1e_1 + a_2e_2 + ... + a_ne_n) = a_1f(e_1) + a_2f(e_2) + ... + a_nf(e_n)
+  <d-math style="text-align: center; padding-bottom: 1em">f(a_1e_1 + a_2e_2 + ... + a_ne_n) = a_1f(e_1) + a_2f(e_2) +
+    ... + a_nf(e_n)
   </d-math>
   <p>
     This follows from addivitiy and homogeneity. Thus, every linear function is
@@ -387,9 +379,7 @@
     simply a convenient way to write out a linear function. The first collumn of
     a matrix specifies where <d-math>e_1</d-math> is sent, the second collumn of
     a matrix specifies where <d-math>e_2</d-math> is sent and so on. For
-    example, the following matrix:<d-math
-      >\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}</d-math
-    >
+    example, the following matrix:<d-math>\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}</d-math>
     sends <d-math>e_1</d-math> to <d-math>(1, 3)</d-math> and
     <d-math>e_2</d-math> to <d-math>(2, 4)</d-math>.
   </p>
@@ -418,8 +408,7 @@
   </p>
   <d-math style="padding-bottom: 1em">
     \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 \\ 6
-    \end{bmatrix} = \begin{bmatrix} 17 \\ 19 \end{bmatrix}</d-math
-  >
+    \end{bmatrix} = \begin{bmatrix} 17 \\ 19 \end{bmatrix}</d-math>
   <p>
     Note that the matrix must always be on the left. This mirrors our function
     notation <d-math>f(x)</d-math> where the input sits to the right of the
@@ -440,10 +429,7 @@
     some prior knowledge. Specifically, I'll assume you're familiar with the
     fundamentals of machine learning and transformer models. If these concepts
     are new, you can check at 3Blue1Brown's excellent
-    <a
-      href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
-      >video series</a
-    >
+    <a href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi">video series</a>
     covering these topics. I'll do my best to introduce the interptability
     methods as they come up, but it might be helpful to also refer to the
     Distill Thread and perhaps also the Anthropic Thread. I think the most
@@ -463,8 +449,8 @@
   </p>
 </d-article>
 
-<d-appendix
-  ><h3>Specific Details</h3>
+<d-appendix>
+  <h3>Specific Details</h3>
   <p>
     Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio nostrum
     rerum dolorum necessitatibus aliquid aperiam suscipit illum beatae nihil,
