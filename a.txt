@@ -8,3 +8,254 @@ dynamic graph showing gradient descent (checkbox for momentum)
 
 
 sprinkle points in a radius around our current place.
+
+      <!-- <p>
+        Let's say we want to create a program that can recognize handwritten digits.
+        Under the machine learning paradigm, instead of manually crafting rules to
+        distinguish each digit, we rely on a large collection of examples. The most
+        widely used dataset for this task is MNIST,<d-cite
+          bibtex-key="lecun1998mnist"
+        ></d-cite>
+        which consists of 70,000 images of handwritten digits, each labeled with the
+        correct number from 0 to 9.
+      </p> -->
+      <!-- <img src="mnist.png" width="100%" />
+      <figcaption>Here are some of the digits in the MNIST dataset.</figcaption>
+      <p>
+        Here's our gameplan: we'll first define a scaffolding for our program. Let's
+        start with a platonic example. For example, a simple scaffolding could look
+        like this:
+        <d-math>\frac{(input+a)^b}{c}</d-math>. Here, the overall structure of the
+        program is fixed but its behavior can vary dramatically depending on the
+        values of a, b, and c. These numbers are called <i>parameters</i>. With a
+        sufficiently expressive scaffolding, the right choice of parameters can
+        produce a program that exhibits our desired behavior.<d-footnote
+          >footnote later
+        </d-footnote>
+      </p> -->
+      <!-- <p>
+        Now, the question is how do we choose these parameters? In order to select
+        parameters, we need some crieria to score how effective a given set are.
+      </p> -->
+      <!-- <h3>Gradients</h3>
+      <p>
+        Before going over gradients, we need to cover derivatives. Derivatives
+        measure the "instantenous rate of change" of a function at a
+        point.<d-footnote
+          >If this concept of instantenous rate of change makes you feel uneasy,
+          don't worry! Even the founders of calculus—Newton and
+          Leibniz—struggled with how to rigorously define it. Their early work
+          relied on intuition and clever reasoning, but it took mathematicians
+          many years to fully formalize the idea. The modern theory of calculus
+          uses the concept of
+          <a href="https://en.wikipedia.org/wiki/Limit_of_a_function">limits</a>
+          to define derivatives.</d-footnote
+        >
+        We write the derivitive of <d-math>f(x)</d-math> as
+        <d-math> \frac{df}{dx} </d-math>. Here, the letter d means "a small
+        change in". As such, this notation can be read as "a small change in f
+        divded by a small change in x".
+      </p>
+      <p>
+        A physical example is often helpful. Let <d-math>f(t)</d-math> describe
+        the position of a car at a certain time. Then the derivative
+        <d-math>\frac{df}{dt}</d-math> describes the velocity of the car. Here,
+        the derivative acts as a sort of mathematical "speedometer".
+      </p>
+      <p>
+        But how do we actually calculate derivatives? Well there's no magic
+        bullet. Instead, mathematicians have derived the derivative for a bunch
+        of simple functions. For example, the derivitive of
+        <d-math>x^2</d-math> happens to be <d-math>2x</d-math> and the
+        derivitive of <d-math>sin(x)</d-math> happens to be
+        <d-math>cos(x)</d-math>. But how would we figure out the derivative of a
+        more complicated function such as <d-math>sin(x^2)</d-math>? Well, given
+        a small change in <d-math>x</d-math> called <d-math>dx</d-math>, the
+        derivative tells us that corresponding small change
+        <d-math>d(x^2)</d-math> will be <d-math>2xdx</d-math>. We similarly know
+        that a small change <d-math>dy</d-math> induces a change of
+        <d-math>cos(y)dy</d-math> in <d-math>sin(y)</d-math>. But in our case,
+        <d-math>y=x^2</d-math> and <d-math>dy=2xdx</d-math>. Thus, by
+        substitution, <d-math>sin(x^2)=cos(x^2)2x</d-math>. This is called the
+        chain rule and is essential for computing derivatives. Simiarly, there
+        exists a sum rule (which as it turns out just involves adding together
+        the derivatives) and a product rule. By having a large set of known
+        derivatives and using these composition rules, it is possible to figure
+        out the derivative for a huge range of functions.
+      </p>
+      <p>
+        Extending this notion of a derivative to functions more than one input
+        is trival. We simply use our compostion rules and treat the other
+        variables as constant numbers that can vary. These derivatives are
+        called
+        <i>partial derivatives</i> to indicate that they tell only part of the
+        story and get a new notation:
+        <d-math>\frac{\partial f}{\partial x}</d-math>. The
+        <i>gradient vector</i> is simply the collection of partial derivatives
+        and is written as <d-math>\nabla f(x)</d-math>.
+      </p>
+      <h3>Linear Functions</h3>
+      <p>
+        You probably remember this famous equation:
+        <d-math>y=mx+b</d-math>. When you graph it, the result is a straight
+        line. This equation can be written in function form as
+        <d-math>f(x)=mx+b</d-math>, which is known as a "linear function" (well,
+        sort of—keep reading). Can we extend this notion of a linear functions
+        beyond 2D?
+      </p>
+      <p>
+        When mathematicians extend a concept beyond its intuitive definition,
+        they typically seek to preserve its core defining properties. For lines,
+        the key property is a constant rate of change—they're straight. You
+        might instinctively reach for derivatives to codify this property, but
+        there's a simpler approach.
+      </p>
+      <p>
+        When <d-math>b=0</d-math>, a function like
+        <d-math>f(x)=mx</d-math> satisfies two important properties:
+      </p>
+      <ul>
+        <li>
+          <strong>Additivity:</strong> <d-math>f(x + y) = f(x) + f(y)</d-math>,
+          since <d-math>m(x + y) = mx + my</d-math>
+        </li>
+        <li>
+          <strong>Homogeneity:</strong> <d-math>f(kx) = kf(x)</d-math>, because
+          <d-math>m(kx) = k(mx)</d-math>
+        </li>
+      </ul>
+      <p>
+        These are the defining traits of what mathematicians call a linear
+        function. Since this definition is simple and convenient, mathematicians
+        opted to strip the title of linear function from functions where b is
+        non-zero and instead call such functions "affine".
+      </p>
+      <p>
+        Before considering functions in higher dimensions, we need a way to
+        represent inputs and outputs that have more than one number. This is
+        where the concept of a <i>vector</i> comes in. A vector is simply an
+        ordered list of values such as
+        <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math>. We define the
+        addition of two vectors and the multiplication of a vector and a number
+        (often called a scalar in this context) as follows:
+      </p>
+      <div style="text-align: center; padding-bottom: 1em">
+        <span style="display: inline-block; margin-right: 2em">
+          <d-math>
+            \begin{bmatrix}a\\b\end{bmatrix} + \begin{bmatrix}c\\d\end{bmatrix}
+            = \begin{bmatrix}a+c\\b+d\end{bmatrix}
+          </d-math>
+        </span>
+        <span style="display: inline-block">
+          <d-math>
+            a\begin{bmatrix}x\\y\end{bmatrix} =
+            \begin{bmatrix}ax\\ay\end{bmatrix}
+          </d-math>
+        </span>
+      </div>
+      <p>
+        The most important vectors are the <i>basis vectors</i>. In two
+        dimensions, these are the vectors
+        <d-math>\begin{bmatrix}1\\0\end{bmatrix}</d-math> and
+        <d-math>\begin{bmatrix}0\\1\end{bmatrix}</d-math>. The basis vectors in
+        higher dimensions follow the same pattern: each one has a single 1 in
+        one position and 0s everywhere else. Where n denotes the dimension we're
+        working in, let's label these basis vectors as
+        <d-math>e_1, e_2, ..., e_n</d-math>. Notice that these basis vectors
+        allow us to write every vector in the form
+        <d-math>a_1e_1 + a_2e_2 + ... + a_ne_n</d-math>. For instance,
+        <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math> can be written as
+        <d-math>3e_1+2e_2.</d-math>
+
+        Now notice, if we have a linear function f:
+      </p>
+      <d-math style="text-align: center; padding-bottom: 1em"
+        >f(a_1e_1 + a_2e_2 + ... + a_ne_n) = a_1f(e_1) + a_2f(e_2) + ... +
+        a_nf(e_n)
+      </d-math>
+      <p>
+        This follows from addivitiy and homogeneity. Thus, every linear function
+        is completely defined by where it sends the basis vectors.
+      </p>
+
+      <p>
+        The previous result motivates the introduction of matricies. A matrix is
+        simply a convenient way to write out a linear function. The first
+        collumn of a matrix specifies where <d-math>e_1</d-math> is sent, the
+        second collumn of a matrix specifies where <d-math>e_2</d-math> is sent
+        and so on. For example, the following matrix:<d-math
+          >\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}</d-math
+        >
+        sends <d-math>e_1</d-math> to <d-math>(1, 3)</d-math> and
+        <d-math>e_2</d-math> to <d-math>(2, 4)</d-math>.
+      </p>
+      <p>
+        To apply the linear function given by a matrix to a vector, multiply
+        each column vector of the matrix by the corresponding component of the
+        input vector, then add the results together.
+      </p>
+      <p>For example, suppose we want to apply the matrix</p>
+      <d-math style="padding-bottom: 1em">
+        A = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
+      </d-math>
+      <p>to the vector</p>
+      <d-math style="padding-bottom: 1em">
+        \vec{v} = \begin{bmatrix} 5 \\ 6 \end{bmatrix}
+      </d-math>
+      <p>This is equivalent to computing:</p>
+      <d-math style="padding-bottom: 1em">
+        5 \begin{bmatrix}1 \\ 3\end{bmatrix} + 6 \begin{bmatrix}2 \\
+        4\end{bmatrix} = \begin{bmatrix}5 \\ 15\end{bmatrix} + \begin{bmatrix}12
+        \\ 24\end{bmatrix} = \begin{bmatrix}17 \\ 39\end{bmatrix}
+      </d-math>
+      <p>
+        This procedure is called matrix multiplication. We can write the
+        procedure of applying the matrix to the vector as follows:
+      </p>
+      <d-math style="padding-bottom: 1em">
+        \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 \\ 6
+        \end{bmatrix} = \begin{bmatrix} 17 \\ 19 \end{bmatrix}</d-math
+      >
+      <p>
+        Note that the matrix must always be on the left. This mirrors our
+        function notation <d-math>f(x)</d-math> where the input sits to the
+        right of the function.
+      </p>
+      <h3>How are ML models composed?</h3>
+      <p>
+        Before we dive into how these machines "learn", we must first
+        investigate their structure. The core idea of ML is to start with a
+        "scaffodling" function that has a number of parameters. What kind of
+        scaffolding function to choose? Expressive and easy to compute
+      </p>
+
+      <h1>Setup</h1>
+      <p>
+        I aimed to keep the introduction assumption-free so that readers could
+        grasp the overall idea of the paper. However, the rest of the paper will
+        require some prior knowledge. Specifically, I'll assume you're familiar
+        with the fundamentals of machine learning and transformer models. If
+        these concepts are new, you can check at 3Blue1Brown's excellent
+        <a
+          href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
+          >video series</a
+        >
+        covering these topics. I'll do my best to introduce the interptability
+        methods as they come up, but it might be helpful to also refer to the
+        Distill Thread and perhaps also the Anthropic Thread. I think the most
+        fruitful papers to read are idk bout that actually
+      </p>
+      <p>
+        To start, we need to select a suitable model for our investigation.
+        Among open-source music generation models, Google's MusicLM and Meta's
+        MusicGen are both transformer-based and represent the current state of
+        the art. While their performance is broadly comparable, MusicGen holds a
+        slight edge in quality and therefore will serve as the object of our
+        study.
+      </p>
+      <p>
+        There are some key differences between the modalities of text and sound.
+        On computers, text is stored via the unicode standard which assigns a
+        number to each character.
+      </p>
+      -->
