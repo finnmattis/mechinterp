@@ -58,7 +58,9 @@
     recommendations<d-cite bibtex-key="davenport2018potential"></d-cite>, the
     consequences of failure are severe. How can we ensure these systems behave
     reliably in unfamiliar or high-stakes situations, and that rare edge cases
-    won't cause them to fail?
+    won't cause them to fail?<d-cite
+      bibtex-key="goodfellow2014explaining"
+    ></d-cite>
   </p>
   <p>
     A third concern is security. One of the most pressing threats to today's
@@ -78,7 +80,7 @@
     ></d-cite>
   </p>
   <p>
-    In short, the nontransparency of these systems makes it harder to trust
+    In short, the non-transparency of these systems makes it harder to trust
     their decisions. In response, the field of <i>interpretability</i> has
     emerged, aiming to demystify these systems and provide insight into their
     internal mechanisms.
@@ -86,13 +88,13 @@
   <p>
     If you're unfamiliar with how AI systems are created, this opaqueness may
     seem odd; after all, humans built these systems. Shouldn't we understand how
-    they work? Unfortunatley, not. You may have heard the word "learning" tossed
+    they work? Unfortunately, not. You may have heard the word "learning" tossed
     around in discussions of AI. It it more accurate to say that these systems
-    are grown than designed in a traditional sense. Much like the simple process
-    of evolution gives rise to the incredible complexity of the brain, the
-    simple learning enviroments researchers design result in ___ systems. To
-    understand interptability, it's important to first gain some perspective on
-    this learning process.
+    are grown than designed in a traditional sense. Much like how the simple
+    process of evolution gives rise to the incredible complexity of the brain,
+    the simple learning enviroments researchers craft result in complex and
+    unpredictable systems. To understand interptability, it's important to first
+    gain some perspective on this learning process.
   </p>
   <h3 id="History">A little history</h3>
   <p>
@@ -122,33 +124,32 @@
   </p>
   <p>
     You can probably see where this story is going. Obviously, some form of
-    learning is the answer right? Well—not so much. At the time, scientists had
-    no real understanding of how learning worked in the brain,<d-footnote
-      >Which we still don't</d-footnote
-    >let alone how to replicate it in a machine. The whole idea seemed
-    hopeless—like science fiction. Even with all the challenges of writing
-    programs by hand, they at least offered a clear path forward. You could
-    follow the logic, fix mistakes, and know exactly what the system was
-    doing—none of which was true for learning methods.
+    "machine learning" (ML) is the answer right? Well—not so much. At the time,
+    scientists had no real understanding of how learning worked in the
+    brain,<d-footnote
+      >Which we still don't! We only have isolated insights into synaptic
+      plasticity, neural circuits, and brain regions, without a unifying
+      explanation of how they give rise to complex learning<d-cite
+        bibtex-key="yuste2015neurons"
+      ></d-cite
+      ><d-cite bibtex-key="krakauer2017neuroscience"></d-cite
+      ><d-cite bibtex-key="dehaene2020how"></d-cite></d-footnote
+    >let alone how to replicate it in a machine.
   </p>
   <p>
-    Early attempts didn't inspire confidence either. In 1957, Frank Rosenblatt
-    unveiled the <i>perceptron</i>, a simple model very rougly analogus to
-    neurons in the brain. The system took in binary inputs, each linked to the
-    output through a corresponding "synapse" (often called a <i>weight</i>),
-    which determined how strongly that input influenced the final binary
-    decision. Rosenblatt demonstrated how his machine could differntiate basic
-    shapes on a grid, such as "T"s from "J"s, given the right weights.
-    Additionally, Rosenblatt proposed a simple learning rule that allowed his
-    model to "learn" its weights on its own through a handful of examples.
-  </p>
-  <p>
-    Rossenblatt's work generated a lot of excitement.
-    <i>The New York Times</i> proclaimed that Rosenblatt's perceptron would be
-    able to "walk, talk, see, write, reproduce itself, and be conscious of its
-    existence". Yet the system had crippling limitations. His simple perceptron
-    model could only learn the most trivial tasks. For anything more
-    complicated, his rule would end up in an endless loop.<d-footnote
+    Still, there was some early optimism that it could be done. In 1957, Frank
+    Rosenblatt unveiled the <i>perceptron</i>, a simple model very rougly
+    analogus to neurons in the brain. Rosenblatt demonstrated how his machine
+    could differntiate basic shapes on a grid, such as "T"s from "J"s if
+    configured properly. Additionally, Rosenblatt proposed a simple learning
+    rule that allowed his model to learn some behavior on its own through a
+    handful of examples. Initially, Rossenblatt's work was met with excitement
+    with <i>The New York Times</i> proclaiming that Rosenblatt's perceptron
+    would be able to "walk, talk, see, write, reproduce itself, and be conscious
+    of its existence".<d-cite bibtex-key="nyt1958perceptron"></d-cite> Yet, that
+    excitement soon faded as the perceptron could only learn the most trivial
+    tasks. For anything more complicated, his rule would end up in an endless
+    loop.<d-footnote
       >More specifically, Rosenblatt's perceptron could only learn
       linearly-separable patterns, meaning the space of inputs could be divided
       into classes using a straight line. A classic example of a problem it
@@ -161,7 +162,7 @@
     </d-footnote>
     Clearly, the system needed to be much more complicated to have any utility.
     As such, Rossenblatt tried composing networks of his perceptrons, but failed
-    to find a corresponding "learning rule".
+    to find a corresponding learning rule.
   </p>
   <p>
     As such, the field of AI entered a long period of stagnation. The initial
@@ -170,33 +171,37 @@
     breakthrough. Bernard Widrow and Marcian Hoff introduced the Least Mean
     Squares (LMS) algorithm which was remarkably close to the modern method. But
     the pair stopped just short of applying their method for networks of
-    perceptrons.
+    perceptrons.<d-cite bibtex-key="widrow1960lms"></d-cite>
   </p>
   <p>
     The field of AI would have to wait until 1986 for this long-sought general
-    learning rule. The method, called <i>backpropagation</i>, finally made it
-    possible to train networks of perceptrons. Still, researchers were
-    skeptical. It was thought that the method simply didn't work in practice.
+    learning rule.<d-footnote>Kinda</d-footnote> The method, called
+    <i>backpropagation</i>, was introduced by Rumelhart, Hinton, and Williams
+    and finally made it possible to train networks of perceptrons.<d-cite
+      bibtex-key="rumelhart1986learning"
+    ></d-cite
+    >. Backpropegation led to the development of systems for hisorically
+    challenging problems like handwriting and speech recognition.<d-cite
+      bibtex-key="lecun1989backpropagation"
+    ></d-cite
+    ><d-cite bibtex-key="bengio1992speech"></d-cite>
+    While a major milestone in the field, the tasks were still narrow and
+    robotic—useful, but a far cry from human intelligence. While it was accepted
+    that backpropagation could solve these simpler problems, it was still
+    doubtful that these methods would allow for more general intelligence.
+    Surely the brain's functions couldn't be mimicked through a simple update
+    rule?
   </p>
   <p>
-    However, the success of ML in the 1990s would show that backpropagation
-    could, in fact, work. During this time, researchers developed systems for
-    hisorically challenging problems like handwriting and speech recognition.
-    While a major milestone in the field, these programs still didn't captivate
-    the public. The tasks felt narrow and robotic—useful, but a far cry from
-    human intelligence. While it was accepted that backpropagation could solve
-    these simpler problems, it was still doubtful that these methods would allow
-    for more general intelligence. Surely the brain's functions couldn't be
-    mimicked through a simple update rule?
-  </p>
-  <p>
-    All of that changed in 2012. An ML system <i>AlexNet</i> blew past the
-    competition in the <i>ImageNet</i> challenge, a high-profile test for image
-    recognition. While other systems relied on human engineering and carefully
-    tuned mathematical tricks, AlexNet was created using nothing more than
-    backpropagation. And it didn't just win—it crushed the field. So what
-    changed? Alexnet still used the same core ideas that researchers had know
-    about since the '80s and '90s. The only difference was scale. AlexNet was
+    All of that changed in 2012. An ML system <i>AlexNet</i
+    ><d-cite bibtex-key="krizhevsky2012imagenet"></d-cite> blew past the
+    competition in the <i>ImageNet</i
+    ><d-cite bibtex-key="deng2009imagenet"></d-cite> challenge, a high-profile
+    test for image recognition. While other systems relied on human engineering
+    and carefully tuned mathematical tricks, AlexNet was created using nothing
+    more than backpropagation. And it didn't just win—it crushed the field. So
+    what changed? Alexnet still used the same core ideas that researchers had
+    know about since the 1990s. The only difference was scale. AlexNet was
     orders of magnitude larger than previous systems.
   </p>
   <p>
@@ -220,10 +225,10 @@
   <p>
     After numerous failed attempts to understand models like AlexNet, the first
     interptability successes came in 2020 with the launch of the Distill
-    Circuits thread FOOTNOTE. Researchers mannaged to find curve detection
-    mechanisms as well as detectors for more complex objects like dog ears,
-    sparking renewed interest in the possibility of truly understanding these
-    systems.
+    Circuits thread.<d-cite bibtex-key="cammarata2020circuits"></d-cite>
+    Researchers mannaged to find curve detection mechanisms as well as detectors
+    for more complex objects like dog ears, sparking renewed interest in the
+    possibility of truly understanding these systems.
   </p>
   <p>
     Yet while interptability researchers struggled to understand AlexNet, AI
@@ -236,9 +241,11 @@
     As a result, much of the field's focus shifted toward these new language
     models. These models presented their own unique challenges for
     interpertability. To address these challenges, Anthropic launched the
-    Transformer Circuits Thread, a kind of spiritual successor to Distill
-    Circuits Thread, aimed at reverse-engineering the inner workings of language
-    models layer by layer.
+    Transformer Circuits Thread<d-cite
+      bibtex-key="elhage2021transformer"
+    ></d-cite
+    >, a kind of spiritual successor to Distill Circuits Thread, aimed at
+    reverse-engineering the inner workings of language models layer by layer.
   </p>
   <p>
     While the large-scale deployment of language models has motivated serious
@@ -248,11 +255,11 @@
   </p>
   <h2 id="ML">A Brief Introduction to ML</h2>
   <p>
-    As I wanted to make this project as self-contained as possible, I decided to
-    include an introduction to ML. If you're already familiar with the basics of
-    ML, feel free to skip past this section. The only prior knowledge required
-    for this paper is that you comfortable reading basic algebraic expressions
-    and fundemental concepts like functions.
+    To make this paper as self-contained as possible, I decided to include an
+    introduction to ML. If you're already familiar with the basics of ML, feel
+    free to skip past this section. The only prior knowledge required for this
+    paper is that you comfortable reading basic algebraic expressions and
+    fundemental concepts like functions.
   </p>
   <p>
     Our overall goal is to create a system that learn from data. There are two
