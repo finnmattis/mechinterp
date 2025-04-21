@@ -1,10 +1,4 @@
-housing model:
-
-dynamic graph where you can adjust m and b
-dynamic graph of loss landscape - with global search point highlighted
-dynamic graph showing local search - you can choose a point to start at and then watch local search go
-dynamic graph showing gradient descent (checkbox for momentum)
-
+stochastic updates
 
 
 sprinkle points in a radius around our current place.

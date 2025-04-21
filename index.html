@@ -358,9 +358,9 @@
         To make this paper as self-contained as possible, I've included a brief
         introduction to machine learning. If you're already familiar with the
         basics, feel free to skip this section. The only prior knowledge assumed
-        is comfort with basic algebraic expressions and fundamental math
-        concepts like functions. We'll walk through three probelms to get
-        comfortable with these topics:
+        here is comfort with basic algebraic expressions and fundamental math
+        concepts like functions. In this section, we'll walk through 3 ML
+        probelms:
       </p>
       <ol>
         <li>Predicting house prices based on square footage</li>
@@ -369,9 +369,9 @@
       </ol>
       <h3 id="overview">Housing model</h3>
       <p>
-        The first step in tackling a machine learning problem is gathering data.
-        In this case, we'll use the <i>Ames Housing Dataset</i>, which contains
-        information on 2,930 homes in Ames, Iowa.<d-cite
+        The first step in tackling any machine learning problem is gathering
+        data. In this case, we'll use the <i>Ames Housing Dataset</i>, which
+        contains information on 2,930 homes in Ames, Iowa.<d-cite
           bibtex-key="thapa_ames_2021"
         ></d-cite>
         Heres a graph of the data:
@@ -383,13 +383,13 @@
       <p>
         In ML, we almost always manually design the structure of our
         model.<d-footnote
-          >We'll see why in a second. But there are niche exceptions to this
-          rule such as NeuroEvolution of Augmenting Topologies (NEAT).
+          >There are niche exceptions to this rule such as NeuroEvolution of
+          Augmenting Topologies (NEAT).
         </d-footnote>
-        In this case, let's go with a linear function: $price = (m)(area) + b$.
-        While this structure remains fixed, the behavior of our model can vary
-        dramatically depending on the specific values of the numbers m and b.
-        These numbers are called
+        In this case, let's go with a linear model: $price = (m)(area) + b$.
+        While the structure of our model remains fixed, the behavior of our
+        model can vary dramatically depending on the specific values of the
+        numbers m and b. These numbers are called
         <i>parameters</i>. Experiment with different parameter values using the
         sliders below to see how they affect the model.
       </p>
@@ -426,23 +426,6 @@
           <div class="tick">800k</div>
         </div>
       </div>
-      <!-- <div style="margin-bottom: 20px; text-align: left">
-        <button
-          id="optimalButton"
-          style="
-            background-color: #d65b28;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          "
-        >
-          Find Optimal Parameters
-        </button>
-      </div> -->
       <p>
         To evaluate how well our model explains the data, we use a quantitative
         measure called a <i>loss function</i>. For our housing price prediction,
@@ -453,36 +436,181 @@
         current parameter settings is <span id="mseValue">calculating...</span>.
         Lower MSE values indicate a better fit to the data. For our simple
         housing problem, we can visualize this MSE loss as a function of our two
+        parameters:
+      </p>
+      <div
+        id="loss-landscape-container"
+        style="height: 600px; width: 100%; margin: 30px 0"
+      ></div>
+      <p>
+        The ultimate goal of machine learning is to choose parameters that
+        minimize this loss function. Let's explore some several approaches to
+        finding these optimal parameters.
+      </p>
+      <h4>Global Search</h4>
+      <p>
+        A naïve approach is to conduct a comprehensive search across the entire
+        parameter space. One way to do this is a <i>grid search</i> in which we
+        check every parameter combination in a grid. For example, we may choose
+        to evaluate m between 0 and 500 and b between 0 and 800000 with a 5x5
+        grid. The coarseness of the grid determines how finely we divide each
+        dimension—a finer grid (e.g., 100x100) gives better results but requires
+        more computation (10,000 evaluations instead of just 25). Another
+        approach is <i>random search</i> in which we randomly sample points from
+        the parameter space, with the number of samples determining how
+        thoroughly we explore. Probabilistically, as we increase the number of
+        samples, we become more likely to find points near the optimum, though
+        with diminishing returns—doubling the number of samples doesn't double
+        our chances of finding the global optimum. Look at the example below to
+        see both these methods in action.
+      </p>
+      <p>
+        As you can see, these global search methods work quite well for our
+        simple housing problem. However, this approach doesn't scale well for
+        more complicated models. A grid search in which we check 10 values for
+        each parameter is feasible when there is only two parameters (simply
+        10^2 operations) but would be impossible for a model with 175 billion
+        parameters like the original ChatGPT (10^175,000,000,000) - a number
+        vastly larger than the estimated 10^80 atoms in the observable universe.
+      </p>
+      <p>
+        Random search suffers from similar diminishing returns: in
+        high-dimensional spaces, the probability of randomly sampling near the
+        optimal region becomes vanishingly small. Mathematically, if the optimal
+        region occupies a fraction f of each dimension's range, then in n
+        dimensions, the probability of a random point falling in the optimal
+        region is f^n. For example, if the optimal region is 10% of each
+        dimension's range, in just 30 dimensions the probability drops to 10^-30
+        - effectively zero.
+      </p>
+      <p>
+        This "curse of dimensionality" presents a fundamental challenge: as
+        dimensions increase, the volume of the parameter space grows
+        exponentially. Instead of globally searching for parameter values, we
+        need a way to instead gradually improve our model. We need our model to
+        learn.
+      </p>
+      <h4>Local Search</h4>
+      <p>
+        With local search, we seek to make incremental progress. We start by
+        randomly choosing parameter values. From there, we sprinkle points in a
+        radius around our current parameter values and choose the one with the
+        lowest loss. Repeating this process many times eventually leads to a
+        pretty good set of parameters. Check out this animation below.
+      </p>
+      <p>
+        This method is a far more efficient than global search methods as we
+        explore only a tiny slice of parameter space. However, local search
+        faces a new challenge: local minima. If there is a significant valley in
+        the loss landscape, local search may take a step out and then a step
+        back in getting stuck in an infinite loop. Additionally, local search
+        still isn't free from the curse of dimensionality. As the number of
+        dimensions increases, the volume of the "neighborhood" around our
+        current point grows exponentially.
+      </p>
+      <p>
+        It seems like we need some miracle tool that allows us to determine
+        where to travel without computing all the points around us. Enter
+        gradients. Our trusty compass for navigating these high-dimensional
+        parameter spaces.
+      </p>
+      <h4>Gradient Descent</h4>
+      <p>
+        First off, what even is a gradient? Gradients are the higher-dimensional
+        cousins of the derivative. In calculus, derivatives measure the
+        "instantaneous rate of change" of a function around a point.<d-footnote
+          >The phrase "instantaneous rate of change" should definitely make you
+          feel uneasy. Whenever we talk about change, we are necessarily making
+          a statement about two points. What does it mean for change to happen
+          in an instant? The founders of calculus wrestled with this paradox.
+          Their early work relied on infinitesimals—numbers of infinitely small
+          size. The modern theory of calculus uses the concept of
+          <a href="https://en.wikipedia.org/wiki/Limit_of_a_function">limits</a>
+          to define derivatives, and infinitesimals have been relegated to what
+          is called
+          <a href="https://en.wikipedia.org/wiki/Nonstandard_analysis"
+            >non-standard analysis</a
+          >.</d-footnote
+        >
+      </p>
+      <p>
+        A classic example involves the motion of a car. If the car is at mile
+        marker 10 at noon and mile marker 40 at 1 PM, its average speed over
+        that hour is 30 miles per hour. But what if you're interested in how
+        fast the car is going at exactly 12:30 PM?
+      </p>
+      <p>
+        This is where the concept of an instantaneous rate of change becomes
+        essential. Instead of calculating average speed over a large interval,
+        we consider smaller and smaller intervals around 12:30 PM. As the time
+        interval shrinks, the average rate of change approaches the
+        instantaneous rate—this is what the derivative captures. In this
+        instance, the derivative acts as a sort of mathematical speedometer.
+      </p>
+      <p>
+        So how do we actually compute derivatives? Well, there's no silver
+        bullet. Mathematicians have worked out the derivatives of a bunch of
+        common functions. For example, the derivative of $x^2$ works out to be
+        $2x$ and the derivative of $sin(x)$ works out to be $cos(x)$. To work
+        out the derivative of more complicated functions such as $sin(x^2)+5x$,
+        we simply combine these basic results together using a couple of basic
+        rules such as the sum rule, product rule, and chain rule. The specific
+        computational rules aren't important so I'll leave them out.
+      </p>
+      <p>
+        Getting back to gradients, what should a derivative mean in higher
+        dimensions? When a function depends on more than one variables, we can
+        no longer talk about a single rate of change. Instead, we look at how
+        the function changes as we vary each input independently. These are
+        called <i>partial derivatives</i>. The <i>gradient</i> simply brings
+        these partial derivatives together into a vector. As it turns out, this
+        gradient vector always points in the direction of steepest ascent (this
+        should make sense as steeper axes have a larger component).
+      </p>
+      <p>
+        In computing the gradient vector, we don't need to compute each partial
+        derivative independently as that leads to a ton of repeated computation.
+        Instead, we can employ the aforementioned backpropagation algorithm.
+        Backpropegation works by first computing running the model (whats called
+        a forward pass) and then working backwards to find each partial
+        derivative (the backward pass). Armed with the gradient vector, we've
+        finally triumphed over the curse of dimensionality as computation grows
+        linearly rather than exponentially with respect to the number of
         parameters.
       </p>
-      <!-- <p>
-        But is this the best we could do? In order to find the optimal choice
-        for each parameter, we could simply guess and check all possible
-        combinations. This involves picking a range of values for each parameter
-        and stepping through them one by one—say, increasing m in increments of
-        10 and b in increments of 50,000. We then find that $m=120$ and $b=0$
-        provide the best results with a MSE of 3,211,118,859.
+      <p>
+        The process of gradient descent is very similar to local search. We
+        start with a random choice of parameters. Then, we calculate the
+        gradient vector of the loss function with respect to our parameters.
+        Next, we simply travel in the opposite direction of this vector with
+        some scaling factor, often called the <i>learning rate</i>. Again, this
+        method is fallible to failling into local minima, but is much more
+        efficient than the previously discussed methods. Look at the animation
+        below to see how this gradient descent process works.
       </p>
       <p>
-        This naïve method works fine when we have just two parameters, but it
-        quickly becomes intractable as the number of parameters grows. For
-        example, trying to check 10 different values for each parameter in the
-        original ChatGPT which had 175 billion parameters would mean checking
-        $10^{175{,}000{,}000{,}000}$ combinations. For reference, there are
-        $10^{80}$ atoms in the observable universe. Clearly, we need a more
-        efficient approach.
+        There are a couple of improvements we can make to this method. For one,
+        instead of calculating the exact loss with respect to all of our
+        datapoints, it makes sense to calculate the loss for a small batch of
+        our data. This approximates the gradient pretty well and the small
+        ammount of error may actually be helpful in escaping local minima. These
+        methods that calculate the loss for a batch are called stochastic
+        gradient descent.
       </p>
       <p>
-        Instead of guessing and checking combinations, we need a way to
-        gradually improve our choice of parameters. We need our model to learn.
-        The key to learning is an update rule—a method for taking our current
-        parameters and nudging them in a direction that improves performance.
+        Another optimization of gradient descent is adding a momentum term. This
+        helps the model push faster into directions where its seeing big gains
+        and smooth out wobbly trajectories. There are a couple different
+        implementations of momentum, but the modern king is AdamW which also
+        dynamically adjusts the learning rate for different parameters.
       </p>
       <p>
-        The most natural update rule we could adopt would be to sprinkle points
-        in a radius around our current choice of parameters. For example, given
-        the parameters $m=_$ and $b=_$, we could evaluate the
-      </p> -->
+        And that's the state of the art for optimizing parameters. All of ML
+        simply ammounts to optimizing much larger systems. So let's move on to a
+        real problem: recognizing handwritten digits.
+      </p>
+      <h3>Digit Recognition</h3>
+      
       <h2>MusicGen</h2>
     </d-article>
 
@@ -528,160 +656,6 @@
     </d-appendix>
     <d-bibliography src="bibliography.bib"></d-bibliography>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script>
-      window.addEventListener("DOMContentLoaded", function () {
-        fetch("house_data.json")
-          .then((response) => response.json())
-          .then((data) => {
-            const area = data.map((d) => d["Gr Liv Area"]);
-            const price = data.map((d) => d["SalePrice"]);
-
-            createRawDataPlot(area, price);
-
-            createInteractivePlot(area, price);
-          });
-      });
-
-      function createRawDataPlot(area, price) {
-        const scatterOnly = {
-          x: area,
-          y: price,
-          mode: "markers",
-          name: "Actual Data",
-          type: "scatter",
-          marker: {
-            color: "#d65b28",
-            size: 8,
-            opacity: 0.7,
-            line: { width: 1, color: "#fff" },
-          },
-        };
-
-        const layout = {
-          xaxis: {
-            title: "Living Area (sq ft)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          yaxis: {
-            title: "Sale Price ($)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-          margin: { t: 60, l: 70, r: 30, b: 70 },
-        };
-
-        Plotly.newPlot("raw-data-plot", [scatterOnly], layout, {
-          responsive: true,
-          displayModeBar: false,
-          displaylogo: false,
-        });
-      }
-
-      function createInteractivePlot(area, price) {
-        let m = +document.getElementById("mSlider").value;
-        let b = +document.getElementById("bSlider").value;
-
-        updateSliderValues(m, b);
-
-        const getLine = (x) => x.map((val) => m * val + b);
-
-        const calculateMSE = () => {
-          const predictions = getLine(area);
-          let sumSquaredErrors = 0;
-          for (let i = 0; i < area.length; i++) {
-            const error = predictions[i] - price[i];
-            sumSquaredErrors += error * error;
-          }
-          return sumSquaredErrors / area.length;
-        };
-
-        updateMSEValue(calculateMSE());
-
-        const scatter = {
-          x: area,
-          y: price,
-          mode: "markers",
-          name: "Actual Data",
-          type: "scatter",
-          marker: {
-            color: "#d65b28",
-            size: 8,
-            opacity: 0.6,
-            line: { width: 1, color: "#fff" },
-          },
-        };
-
-        const line = {
-          x: area,
-          y: getLine(area),
-          mode: "lines",
-          name: "Prediction Line",
-          type: "scatter",
-          line: {
-            color: "#000000",
-            width: 4,
-            dash: "solid",
-          },
-        };
-
-        const layout = {
-          xaxis: {
-            title: "Living Area (sq ft)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          yaxis: {
-            title: "Sale Price ($)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-          margin: { t: 60, l: 70, r: 30, b: 70 },
-        };
-
-        Plotly.newPlot("plot", [scatter, line], layout, {
-          responsive: true,
-          displayModeBar: false,
-          displaylogo: false,
-        });
-
-        const update = () => {
-          m = +document.getElementById("mSlider").value;
-          b = +document.getElementById("bSlider").value;
-          updateSliderValues(m, b);
-          Plotly.restyle("plot", { y: [getLine(area)] }, [1]);
-          updateMSEValue(calculateMSE());
-        };
-
-        document.getElementById("mSlider").addEventListener("input", update);
-        document.getElementById("bSlider").addEventListener("input", update);
-      }
-
-      function updateSliderValues(m, b) {
-        document.getElementById("mValue").textContent = m;
-        if (b >= 1000) {
-          document.getElementById("bValue").textContent =
-            (b / 1000).toFixed(0) + "k";
-        } else {
-          document.getElementById("bValue").textContent = b;
-        }
-      }
-
-      function formatMSE(mse) {
-        if (mse >= 1000000000) {
-          return (mse / 1000000000).toFixed(2) + " billion";
-        } else {
-          return mse.toFixed(0);
-        }
-      }
-
-      function updateMSEValue(mse) {
-        document.getElementById("mseValue").textContent = formatMSE(mse);
-      }
-    </script>
+    <script src="housing.js"></script>
   </body>
 </html>
