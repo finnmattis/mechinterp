@@ -5,6 +5,9 @@
     <script src="template.v2.js"></script>
     <title>Music Interpretability</title>
     <style>
+      .byline.grid div:nth-child(3) {
+        visibility: hidden;
+      }
       body {
         font-family: sans-serif;
         padding: 40px;
@@ -305,7 +308,8 @@
         but revered—almost mythologized. What kind of fantastical algorithms had
         it found that beat the competition so badly? What did backpropagation
         know that we didn't? These quesitons spurred the dawn of interptability
-        efforts.
+        efforts. Alternate genesis. Not born from pragmatic worries but
+        scientific curiosity.
       </p>
       <p>
         Just as building AI systems once seemed impossible, interpreting them
@@ -359,15 +363,15 @@
         introduction to machine learning. If you're already familiar with the
         basics, feel free to skip this section. The only prior knowledge assumed
         here is comfort with basic algebraic expressions and fundamental math
-        concepts like functions. In this section, we'll walk through 3 ML
-        probelms:
+        concepts like functions and vectors. In this section, we'll walk through
+        3 ML probelms:
       </p>
       <ol>
         <li>Predicting house prices based on square footage</li>
         <li>Recognizing handwritten digits</li>
         <li>Building a chatbot that can answer user querries</li>
       </ol>
-      <h3 id="overview">Housing model</h3>
+      <h3 id="overview">Housing Model</h3>
       <p>
         The first step in tackling any machine learning problem is gathering
         data. In this case, we'll use the <i>Ames Housing Dataset</i>, which
@@ -483,16 +487,27 @@
         </div>
       </div>
       <p>
-        To evaluate how well our model explains the data, we use a quantitative
-        measure called a <i>loss function</i>. For our housing price prediction,
-        the <i>Mean Squared Error</i> (MSE) is particularly appropriate. MSE
-        calculates the average of the squared differences between our model's
-        predictions and the actual house prices. This penalizes larger errors
-        more heavily, making it suitable for price prediction. The MSE for your
-        current parameter settings is <span id="mseValue">calculating...</span>.
-        Lower MSE values indicate a better fit to the data. For our simple
-        housing problem, we can visualize this MSE loss as a function of our two
-        parameters:
+        This quadratic model seems to fit the data a bit better. But how can we
+        quantify this? To evaluate how well our model explains the data, we use
+        a <i>loss function</i>. For our housing price prediction, the
+        <i>Mean Squared Error</i> (MSE) is particularly appropriate.<d-footnote
+          >If you're comfortable with statistics, the MSE arises naturally when
+          you assume the noise in your data is normally distributed. That is,
+          the difference between the model's prediction and the actual value is
+          treated as random, centered at zero, and following a bell curve. Under
+          this assumption, maximizing the likelihood of the data leads directly
+          to minimizing the mean squared error.</d-footnote
+        >
+        MSE calculates the average of the squared differences between our
+        model's predictions and the actual house prices. This penalizes larger
+        errors more heavily. The MSE for your linear model is
+        <span id="linearMSEValue">calculating...</span> while the MSE for your
+        quadratic model is <span id="quadraticMSEValue">calculating...</span>.
+        Remember, lower is better. Your quadratic model likely outperforms your
+        linear model by a bit, but it's not too significant. As such, let's
+        stick to the linear model for simplicity. Since the linear model has
+        only two parameters, we can visualize the loss function as a
+        3-dimensional surface.
       </p>
       <div
         id="loss-landscape-container"
@@ -665,21 +680,224 @@
         simply ammounts to optimizing much larger systems. So let's move on to a
         real problem: recognizing handwritten digits.
       </p>
-      <h3>Digit Recognition</h3>
+      <h3 id="digit">Digit Recognition</h3>
       <p>
         As with the last problem, we'll start by choosing a dataset. The classic
-        dataset for handwritten digits is the MNIST dataset which consists of
-        70,000 images of handwritten digits, each labeled with the correct
-        number from 0 to 9.<d-cite bibtex-key="lecun1998mnist"></d-cite> Let's
-        take a look at some of the examples:
+        dataset for handwritten digits is MNIST, which consists of 70,000
+        black-and-white images of size 28x28, each labeled with the correct
+        digit from 0 to 9.<d-cite bibtex-key="lecun1998mnist"></d-cite>
+        Let's take a look at some examples:
       </p>
       <img src="mnist.png" width="100%" />
       <p>
-        Now as I mentioned before, the only difference between the housing
-        problem and this digit recognition problem is the structure of the
-        model.
+        Now, as I mentioned before, the key difference between the housing
+        problem and more realistic machine learning tasks is the complexity of
+        the model, so let's start by figuring out an efficient way to lay out
+        computations.
       </p>
-      <h2>MusicGen</h2>
+      <h4>Model Architectures and Deep Learning</h4>
+      <p>
+        Our goal is to create a model with enough expressivity to capture the
+        nuance of real-world data while remaining computationally cheap. Through
+        extensive empirical research, it has become abuntly clear that
+        increasing the number of steps in a model's computation is far more
+        efficient than increasing the complexity of each individual step. In the
+        nomenclature, <i>deep</i> models outperform <i>wide</i> models.
+      </p>
+      <p>
+        One reason for this is compositionality — the idea that complex patterns
+        can be constructed by composing simpler ones. Deep models naturally
+        exploit this by layering simple transformations, each building on the
+        one before. This allows them to learn hierarchical representations:
+        low-level features in early layers (like edges in an image), mid-level
+        patterns in intermediate layers (like shapes), and high-level concepts
+        in the final layers (like objects or actions). Wide models, in contrast,
+        attempt to learn complex patterns all at once, without this step-by-step
+        structure, which often makes them less efficient and less generalizable.
+        This principle is so fundamental that the field itself has come to be
+        known as deep learning.
+      </p>
+      <p>
+        Motivated by a desire to make each step as simple as possible, we
+        naturally turn to linear functions. In higher dimensions, linear
+        functions are direct generalizations of the familiar equation $y = mx$.
+        For instance, consider a linear function that maps 3-dimensional input
+        vectors to 2-dimensional output vectors. This transformation can be
+        written in a form that closely resembles $y = mx$ or alternatively,
+        using the more compact matrix notation:
+      </p>
+      <div
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 1em;
+        "
+      >
+        <div>
+          $\begin{aligned} f(\mathbf{x})_1 &= a_{1}x + a_{2}y + a_{3}z \\
+          f(\mathbf{x})_2 &= b_{1}x + b_{2}y + b_{3}z \end{aligned}$
+        </div>
+        <div style="font-size: 4em">=</div>
+        <div>
+          $\begin{bmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{bmatrix}
+          \begin{bmatrix} x \\ y \\ z \end{bmatrix}$
+        </div>
+      </div>
+      <p>We can also include a shifting term as follows:</p>
+      <div
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 1em;
+        "
+      >
+        <div>
+          $\begin{aligned} f(\mathbf{x})_1 &= a_{1}x + a_{2}y + a_{3}z + a_4 \\
+          f(\mathbf{x})_2 &= b_{1}x + b_{2}y + b_{3}z + b_4 \end{aligned}$
+        </div>
+        <div style="font-size: 4em">=</div>
+        <div>
+          $\begin{bmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{bmatrix}
+          \begin{bmatrix} x \\ y \\ z \end{bmatrix} + \begin{bmatrix} a_4 \\ b_4
+          \end{bmatrix}$
+        </div>
+      </div>
+      <p>
+        We now construct our model layer by layer. Each layer of our model is
+        comprised of first a linear function and then a point-wise
+        non-linearity. This non-linearity almost always takes the general shape
+        of the Rectified Linear Unit (ReLU): $max(x, 0)$ as it has very
+        favorable properties for optimization.<d-footnote
+          >More specifically, if you're comfortable thinking about gradients,
+          ReLU allows gradients to flow backwards unencombered whereas other
+          activation functions like a sigmoid flatten out and saturate the
+          gradients.</d-footnote
+        >
+        The vanilla ReLU is succeptable to the "dying ReLU" problem in which
+        some vector components get stuck in negative outputs. Since ReLU clips
+        negative values to zero, these negative components have no impact on the
+        final output and thus, weights connecting to them receive no training
+        signal. Thus, ReLU often kills certain parts of the network which is
+        very wasteful. To address, this many ReLU variants add a small negative
+        tail to the function. Pictured below is ReLU and some of its variants.
+      </p>
+      <div
+        id="activation-functions"
+        style="width: 100%; max-width: 800px; margin: auto"
+      ></div>
+      <h4>Solving MNIST</h4>
+      <p>
+        Now that we have an efficient way to construct complex models, let's put
+        it to use by training a 3-layer neural network on the MNIST dataset. The
+        architecture is as follows: the input layer has 784 units, corresponding
+        to the 28x28 pixels of each image. The first hidden layer has 128 units,
+        followed by a second hidden layer with 64 units. Finally, the output
+        layer has 10 units, one for each digit class from 0 to 9. These raw
+        final scores are called logits. In order to turn these logits into a
+        probability distribution, we use the softmax function due to its nice
+        calculus properties:
+      </p>
+      <p>$\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}$</p>
+      <p>
+        Before we train our model, we'll need to choose a loss function. A
+        standard choice is the negative log-likelihodd (NLL). As the name
+        suggests, this loss function sums the model's negaitve log probabilities
+        of the correct labels.<d-footnote
+          >Like mean squared error (MSE) in regression, the negative
+          log-likelihood (NLL) has a probabilistic interpretation: it arises
+          naturally when assuming a particular model of noise. In this case, if
+          we treat class labels as being drawn from a categorical distribution
+          parameterized by the model's predicted probabilities, then minimizing
+          the NLL is equivalent to maximizing the likelihood of the observed
+          labels</d-footnote
+        >
+        Now, let's train our model.
+      </p>
+      <p>
+        We start by initalizing our network randomly.<d-footnote>
+          There is some subtlety in how this is done. If weights are too large
+          or too small, activations can explode or vanish as they propagate
+          through layers. To avoid this, modern initialization schemes (like
+          Xavier or He initialization) preserve statistics such as variance
+          across layers. In this case, He initialization was used.
+        </d-footnote>
+        In machine learning, it's typical to divide your data into portions to
+        train on and portions to test on. In this case, I used 60,000 examples
+        for training, and set aside 10,000 examples for testing. After training,
+        the model scored 97.84% on the test set. Not bad!
+      </p>
+      <h4>What the hell is a neural networK?</h4>
+      <p>
+        Before moving onto language models, I wanted to clear up some
+        terminology. The architectural pattern of linear functions sandwiched
+        between point-wise non-linearities that I described are called neural
+        networks. This term dates back to Rosenblatt's networks of perceptrons.
+        I don't love the term—it's not pedagogically useful or particularly
+        motivating. The reason we use linear functions is not because they
+        "model neurons". They don't. Biological neurons are far more complex
+        than a linear function. Instead, linear functions arise due to their
+        simplicity and the instatiable need for depth. The success of machine
+        learning is not tied to the power of our brains but rather it's own
+        mathematical miracle.
+      </p>
+      <p>
+        Nonetheless, this view does provide an entertaining visualization of the
+        computation that the model does. Below, you can draw in a digit and take
+        a look inside this trained "network".
+      </p>
+      <h3 id="chatbot">Chatbot</h3>
+      <p>
+        Now for the final challenge: chatbots. The medium of text introduces
+        challenges we didn't face with digit recognition—most notably,
+        variable-length input and complex dependencies across time. To address
+        these issues, we'll need a new architectural approach: transformers. To
+        explain how these models work, let's walk through the life of a question
+        typed into ChatGPT.
+      </p>
+      <p>
+        When you're question reaches OpenAI, it's encoded as a string of 1s and
+        0s. The first step in the process in tokenizing this string through a
+        process called Byte Pair Encoding (BPE). The specifics of this are not
+        important but this algorithm breaks the prompt into little chunks called
+        tokens. These tokens operate at the word or sub-word level. This step is
+        crucial as transformers are very sensitive to the size of their input.
+      </p>
+      <p>
+        Next, we swap these tokens for their respective embedding vectors via a
+        table. The embedding space forms the heart of the transformer. The idea
+        is that these embedding vectors somehow encode the semantic meanings of
+        their words. For example, we might expect happy and jolly or sad and
+        gloomy to be grouped close together in this embedding space. All the
+        computation of the transformer will serve to refine these embedding
+        vectors and imbue them with more meaning and context.
+      </p>
+      <p>
+        Just as vanilla neural networks were comprimsed of an alternating
+        sequence of linearities followed by non-linearities, transformers
+        sandwitch attention blocks and Multi-Layer Perceptrons (MLP) blocks. The
+        job of attention blocks is to pass information between the different
+        tokens. For example, perhaps the token embedding vector for fox would be
+        modified by its respective adjectives proceeding it quick and brown. The
+        MLP blocks are the familiar neural networks we dealt with in the last
+        section. Their job is to store information like Lebron James plays
+        basketball and perhaps perform some kind of reasoning - more opaque. A
+        useful mnemonic for rembering this is: communication followed by
+        computation. 4x
+      </p>
+      <p>Residual Steram and LNs</p>
+      <p>Attention</p>
+      <p>Sampling</p>
+      <p>pre-training</p>
+      <p>Other variants of transformers: cross-attention</p>
+      <h2>A quick overview of MusicGen</h2>
+      <p>
+        Differences in modality between text - RVQ, encodeoc and allat as well
+        as cross-attention stuff
+      </p>
+      <p>Delay pattern</p>
+      <h2>Initial investigation: vector space</h2>
     </d-article>
 
     <d-appendix

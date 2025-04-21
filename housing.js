@@ -1,3 +1,54 @@
+const x = Array.from({ length: 500 }, (_, i) => -5 + (10 * i) / 499);
+
+const relu = x.map((v) => Math.max(0, v));
+const leakyRelu = x.map((v) => (v > 0 ? v : 0.1 * v));
+const elu = x.map((v) => (v > 0 ? v : Math.exp(v) - 1));
+const gelu = x.map(
+  (v) =>
+    0.5 *
+    v *
+    (1 + Math.tanh(Math.sqrt(2 / Math.PI) * (v + 0.044715 * Math.pow(v, 3))))
+);
+
+const data = [
+  {
+    x: x,
+    y: relu,
+    type: "scatter",
+    mode: "lines",
+    name: "ReLU",
+  },
+  {
+    x: x,
+    y: leakyRelu,
+    type: "scatter",
+    mode: "lines",
+    name: "Leaky ReLU",
+  },
+  {
+    x: x,
+    y: elu,
+    type: "scatter",
+    mode: "lines",
+    name: "ELU",
+  },
+  {
+    x: x,
+    y: gelu,
+    type: "scatter",
+    mode: "lines",
+    name: "GELU",
+  },
+];
+
+const layout = {
+  xaxis: { title: "x" },
+  yaxis: { title: "f(x)" },
+  legend: { x: 0, y: 1 },
+};
+
+Plotly.newPlot("activation-functions", data, layout);
+
 window.addEventListener("DOMContentLoaded", function () {
   fetch("house_data.json")
     .then((response) => response.json())
@@ -67,7 +118,7 @@ function createLinearPlot(area, price) {
     return sumSquaredErrors / area.length;
   };
 
-  updateMSEValue(calculateMSE());
+  updateMSEValueLinear(calculateMSE());
 
   const scatter = {
     x: area,
@@ -122,7 +173,7 @@ function createLinearPlot(area, price) {
     b = +document.getElementById("bSlider").value;
     updateSliderValuesLinear(m, b);
     Plotly.restyle("linearPlot", { y: [getLine(area)] }, [1]);
-    updateMSEValue(calculateMSE());
+    updateMSEValueLinear(calculateMSE());
   };
 
   document.getElementById("mSlider").addEventListener("input", update);
@@ -130,7 +181,6 @@ function createLinearPlot(area, price) {
 }
 
 function createQuadraticPlot(area, price) {
-  // Initialize with more reasonable default values
   let a = +document.getElementById("aSlider").value;
   let b = +document.getElementById("qBSlider").value;
   let c = +document.getElementById("cSlider").value;
@@ -149,7 +199,7 @@ function createQuadraticPlot(area, price) {
     return sumSquaredErrors / area.length;
   };
 
-  updateMSEValue(calculateMSE());
+  updateMSEValueQuadratic(calculateMSE());
 
   const scatter = {
     x: area,
@@ -180,7 +230,6 @@ function createQuadraticPlot(area, price) {
       dash: "solid",
     },
   };
-  // Calculate y values for the smoother line
   line.y = getQuad(line.x);
 
   const layout = {
@@ -225,7 +274,7 @@ function createQuadraticPlot(area, price) {
       [1]
     );
 
-    updateMSEValue(calculateMSE());
+    updateMSEValueQuadratic(calculateMSE());
   };
 
   document.getElementById("aSlider").addEventListener("input", update);
@@ -269,8 +318,12 @@ function formatMSE(mse) {
   }
 }
 
-function updateMSEValue(mse) {
-  document.getElementById("mseValue").textContent = formatMSE(mse);
+function updateMSEValueLinear(mse) {
+  document.getElementById("linearMSEValue").textContent = formatMSE(mse);
+}
+
+function updateMSEValueQuadratic(mse) {
+  document.getElementById("quadraticMSEValue").textContent = formatMSE(mse);
 }
 
 const createLossLandscape = async (area, price) => {
