@@ -1,21 +1,10 @@
-math is brisk
+housing model:
 
-to address:
+dynamic graph where you can adjust m and b
+dynamic graph of loss landscape - with global search point highlighted
+dynamic graph showing local search - you can choose a point to start at and then watch local search go
+dynamic graph showing gradient descent (checkbox for momentum)
 
-arrow vector
 
-As we'll see later the paralellizable the better
 
-more linearly
-
-what was the point of this little history exercise? Some of the methods aren't pedigocailly clear today: key takeaways are that AI is not obvious and very miraculous
-
-miraculousness of AI
-
-weights vs parameters (interchangable but a weird taxonomy there - weights originally refer to ) - prob in 
-
-systems vs models
-
-mention neuron terminology for perceptron
-
-def of AL/ML
+sprinkle points in a radius around our current place.

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
-<link rel="stylesheet" href="styles.css" />
+<!-- <link rel="stylesheet" href="styles.css" /> -->
 <script src="template.v2.js"></script>
+
 <d-front-matter>
   <script type="text/json">
     {
@@ -255,23 +256,120 @@
   </p>
   <h2 id="ML">A Brief Introduction to ML</h2>
   <p>
-    To make this paper as self-contained as possible, I decided to include an
-    introduction to ML. If you're already familiar with the basics of ML, feel
-    free to skip past this section. The only prior knowledge required for this
-    paper is that you comfortable reading basic algebraic expressions and
-    fundemental concepts like functions.
+    To make this paper as self-contained as possible, I've included a brief
+    introduction to machine learning. If you're already familiar with the
+    basics, feel free to skip this section. The only prior knowledge assumed is
+    comfort with basic algebraic expressions and fundamental math concepts like
+    functions. We'll walk through three probelms to learn the basics:
+  </p>
+  <ol>
+    <li>Predicting house prices based on square footage</li>
+    <li>Recognizing handwritten digits</li>
+    <li>Building a chatbot that can answer user querries</li>
+  </ol>
+  <h3 id="overview">Housing model</h3>
+  <p>
+    The first step in tackling a machine learning problem is gathering data. For
+    this project, we'll use the <i>Ames Housing Dataset</i>, which contains
+    information on 2,930 homes in Ames, Iowa.<d-cite
+      bibtex-key="thapa_ames_2021"
+    ></d-cite>
+    Heres a graph of the data:
+  </p>
+  <div
+    id="raw-data-plot"
+    style="height: 600px; max-width: 900px; margin-top: 40px"
+  ></div>
+  <p>
+    We'll first define a scaffolding for our model:
+    <d-math>price = (m)(area) + b</d-math>. The overall structure of the model
+    is fixed but its behavior can vary depending on the values of a, b, and c.
+    These numbers are called <i>parameters</i>. Try varying these numbers below.
+  </p>
+  <div id="plot" style="height: 600px; max-width: 900px"></div>
+
+  <label>Slope (m): <span id="slopeVal">100</span></label
+  ><br />
+  <input type="range" id="slope" min="0" max="300" value="100" /><br /><br />
+
+  <label>Intercept (b): <span id="interceptVal">0</span></label
+  ><br />
+  <input
+    type="range"
+    id="intercept"
+    min="0"
+    max="500000"
+    step="10000"
+    value="0"
+  /><br /><br />
+  <p>
+    The first two models seem to explain the data decently well. While, the last
+    model is horribly off. We can use a <i>loss function</i> to quantify how
+    effective our model is. In this case, a natural choice is
+    <i>Mean Squared Error</i>
+    (MSE), which, as the name suggests, measures the average of the squared
+    differences between predicted and actual values. Our first model has a MSE
+    of 3,311,877,704, the second results in a MSE of 5,517,523,878, and the
+    third produces a much larger MSE of 55,17,523,878. Thus, the first program
+    performs the best.
   </p>
   <p>
-    Our overall goal is to create a system that learn from data. There are two
-    main components to this: the system and the learning rule.
+    But is this the best we could do? In order to find the optimal choice for
+    each parameter, we could simply guess and check all possible combinations.
+    This involves picking a range of values for each parameter and stepping
+    through them one by one—say, increasing m in increments of 10 and b in
+    increments of 50,000. We then find that $m=120$ and $b=0$ provide the best
+    results with a MSE of 3,211,118,859.
   </p>
   <p>
-    We'll start by borriwing two concepts from math: gradients and linear
-    functions. I'll explain these concepts without reference to ML to why we'll
-    need them, but there'll usefulness will become apparent shortly. From there,
-    I'll explain how AI models are constructed and trained. Finally, we'll go
-    over the transformer architecture which is essential to modern AI.
+    This naïve method works fine when we have just two parameters, but it
+    quickly becomes intractable as the number of parameters grows. For example,
+    trying to check 10 different values for each parameter in the original
+    ChatGPT which had 175 billion parameters would mean checking
+    $10^{175{,}000{,}000{,}000}$ combinations. For reference, there are
+    $10^{80}$ atoms in the observable universe. Clearly, we need a more
+    efficient approach.
   </p>
+  <p>
+    Instead of guessing and checking combinations, we need a way to gradually
+    improve our choice of parameters. We need our model to learn. The key to
+    learning is an update rule—a method for taking our current parameters and
+    nudging them in a direction that improves performance.
+  </p>
+  <p>
+    The most natural update rule we could adopt would be to sprinkle points in a
+    radius around our current choice of parameters. For example, given the
+    parameters $m=_$ and $b=_$, we could evaluate the
+  </p>
+
+  <!-- <p>
+    Let's say we want to create a program that can recognize handwritten digits.
+    Under the machine learning paradigm, instead of manually crafting rules to
+    distinguish each digit, we rely on a large collection of examples. The most
+    widely used dataset for this task is MNIST,<d-cite
+      bibtex-key="lecun1998mnist"
+    ></d-cite>
+    which consists of 70,000 images of handwritten digits, each labeled with the
+    correct number from 0 to 9.
+  </p> -->
+  <!-- <img src="mnist.png" width="100%" />
+  <figcaption>Here are some of the digits in the MNIST dataset.</figcaption>
+  <p>
+    Here's our gameplan: we'll first define a scaffolding for our program. Let's
+    start with a platonic example. For example, a simple scaffolding could look
+    like this:
+    <d-math>\frac{(input+a)^b}{c}</d-math>. Here, the overall structure of the
+    program is fixed but its behavior can vary dramatically depending on the
+    values of a, b, and c. These numbers are called <i>parameters</i>. With a
+    sufficiently expressive scaffolding, the right choice of parameters can
+    produce a program that exhibits our desired behavior.<d-footnote
+      >footnote later
+    </d-footnote>
+  </p> -->
+  <!-- <p>
+    Now, the question is how do we choose these parameters? In order to select
+    parameters, we need some crieria to score how effective a given set are.
+  </p> -->
   <h3>Gradients</h3>
   <p>
     Before going over gradients, we need to cover derivatives. Derivatives
@@ -524,3 +622,131 @@
   </p>
 </d-appendix>
 <d-bibliography src="bibliography.bib"></d-bibliography>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    fetch("house_data.json")
+      .then((response) => response.json())
+      .then((data) => {
+        const area = data.map((d) => d["Gr Liv Area"]);
+        const price = data.map((d) => d["SalePrice"]);
+
+        let m = 100;
+        let b = 0;
+
+        const getLine = (x) => x.map((val) => m * val + b);
+
+        const scatter = {
+          x: area,
+          y: price,
+          mode: "markers",
+          name: "Actual Data",
+          type: "scatter",
+          marker: {
+            color: "#007bff",
+            size: 8,
+            opacity: 0.6,
+            line: { width: 1, color: "#fff" },
+          },
+        };
+
+        const line = {
+          x: area,
+          y: getLine(area),
+          mode: "lines",
+          name: "Prediction Line",
+          type: "scatter",
+          line: {
+            color: "#e83e8c",
+            width: 4,
+            dash: "solid",
+          },
+        };
+
+        const layout = {
+          xaxis: {
+            title: "Living Area (sq ft)",
+            gridcolor: "#e0e0e0",
+            zeroline: false,
+          },
+          yaxis: {
+            title: "Sale Price ($)",
+            gridcolor: "#e0e0e0",
+            zeroline: false,
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+          margin: { t: 60, l: 70, r: 30, b: 70 },
+        };
+
+        Plotly.newPlot("plot", [scatter, line], layout, {
+          responsive: true,
+          displayModeBar: false,
+          displaylogo: false,
+        });
+
+        const update = () => {
+          m = +document.getElementById("slope").value;
+          b = +document.getElementById("intercept").value;
+          document.getElementById("slopeVal").textContent = m;
+          document.getElementById("interceptVal").textContent = b;
+          Plotly.restyle("plot", { y: [getLine(area)] }, [1]);
+        };
+
+        document.getElementById("slope").addEventListener("input", update);
+        document.getElementById("intercept").addEventListener("input", update);
+      });
+  });
+</script>
+
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    fetch("house_data.json")
+      .then((response) => response.json())
+      .then((data) => {
+        const area = data.map((d) => d["Gr Liv Area"]);
+        const price = data.map((d) => d["SalePrice"]);
+
+        const scatterOnly = {
+          x: area,
+          y: price,
+          mode: "markers",
+          name: "Actual Data",
+          type: "scatter",
+          marker: {
+            color: "#17a2b8",
+            size: 8,
+            opacity: 0.7,
+            line: { width: 1, color: "#fff" },
+          },
+        };
+
+        const layout = {
+          title: {
+            text: "Actual House Price vs Living Area",
+            font: { size: 22 },
+          },
+          xaxis: {
+            title: "Living Area (sq ft)",
+            gridcolor: "#e0e0e0",
+            zeroline: false,
+          },
+          yaxis: {
+            title: "Sale Price ($)",
+            gridcolor: "#e0e0e0",
+            zeroline: false,
+          },
+          plot_bgcolor: "#ffffff",
+          paper_bgcolor: "#ffffff",
+          margin: { t: 60, l: 70, r: 30, b: 70 },
+        };
+
+        Plotly.newPlot("raw-data-plot", [scatterOnly], layout, {
+          responsive: true,
+          displayModeBar: false,
+          displaylogo: false,
+        });
+      });
+  });
+</script>

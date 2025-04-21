@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>House Price vs Area</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f8f9fa;
+        margin: 40px;
+      }
+      h2 {
+        color: #343a40;
+      }
+      #plot {
+        max-width: 900px;
+        margin-bottom: 30px;
+      }
+      input[type="range"] {
+        width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>House Price vs Area</h2>
+    <div id="plot" style="height: 600px"></div>
+
+    <label>Slope (m): <span id="slopeVal">100</span></label
+    ><br />
+    <input type="range" id="slope" min="0" max="300" value="100" /><br /><br />
+
+    <label>Intercept (b): <span id="interceptVal">0</span></label
+    ><br />
+    <input
+      type="range"
+      id="intercept"
+      min="0"
+      max="500000"
+      step="10000"
+      value="0"
+    /><br /><br />
+
+    <script>
+      fetch("house_data.json")
+        .then((response) => response.json())
+        .then((data) => {
+          const area = data.map((d) => d["Gr Liv Area"]);
+          const price = data.map((d) => d["SalePrice"]);
+
+          let m = 100;
+          let b = 0;
+
+          const getLine = (x) => x.map((val) => m * val + b);
+
+          const scatter = {
+            x: area,
+            y: price,
+            mode: "markers",
+            name: "Actual Data",
+            type: "scatter",
+            marker: {
+              color: "#007bff",
+              size: 8,
+              opacity: 0.6,
+              line: { width: 1, color: "#fff" },
+            },
+          };
+
+          const line = {
+            x: area,
+            y: getLine(area),
+            mode: "lines",
+            name: "Prediction Line",
+            type: "scatter",
+            line: {
+              color: "#e83e8c",
+              width: 4,
+              dash: "solid",
+            },
+          };
+
+          const layout = {
+            title: {
+              text: "House Price Prediction Model",
+              font: { size: 24 },
+            },
+            xaxis: {
+              title: "Living Area (sq ft)",
+              gridcolor: "#e0e0e0",
+              zeroline: false,
+            },
+            yaxis: {
+              title: "Sale Price ($)",
+              gridcolor: "#e0e0e0",
+              zeroline: false,
+            },
+            plot_bgcolor: "#ffffff",
+            paper_bgcolor: "#ffffff",
+            margin: { t: 60, l: 70, r: 30, b: 70 },
+          };
+
+          Plotly.newPlot("plot", [scatter, line], layout, {
+            responsive: true,
+            displayModeBar: false, // 👈 disables the modebar
+          });
+
+          const update = () => {
+            m = +document.getElementById("slope").value;
+            b = +document.getElementById("intercept").value;
+            document.getElementById("slopeVal").textContent = m;
+            document.getElementById("interceptVal").textContent = b;
+            Plotly.restyle("plot", { y: [getLine(area)] }, [1]);
+          };
+
+          document.getElementById("slope").addEventListener("input", update);
+          document
+            .getElementById("intercept")
+            .addEventListener("input", update);
+        });
+    </script>
+  </body>
+</html>
