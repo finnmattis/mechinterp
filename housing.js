@@ -6,7 +6,8 @@ window.addEventListener("DOMContentLoaded", function () {
       const price = data.map((d) => d["SalePrice"]);
 
       createRawDataPlot(area, price);
-      createInteractivePlot(area, price);
+      createLinearPlot(area, price);
+      createQuadraticPlot(area, price);
       createLossLandscape(area, price);
     });
 });
@@ -48,11 +49,11 @@ function createRawDataPlot(area, price) {
   });
 }
 
-function createInteractivePlot(area, price) {
+function createLinearPlot(area, price) {
   let m = +document.getElementById("mSlider").value;
   let b = +document.getElementById("bSlider").value;
 
-  updateSliderValues(m, b);
+  updateSliderValuesLinear(m, b);
 
   const getLine = (x) => x.map((val) => m * val + b);
 
@@ -111,7 +112,7 @@ function createInteractivePlot(area, price) {
     margin: { t: 60, l: 70, r: 30, b: 70 },
   };
 
-  Plotly.newPlot("plot", [scatter, line], layout, {
+  Plotly.newPlot("linearPlot", [scatter, line], layout, {
     responsive: true,
     displayModeBar: false,
   });
@@ -119,8 +120,8 @@ function createInteractivePlot(area, price) {
   const update = () => {
     m = +document.getElementById("mSlider").value;
     b = +document.getElementById("bSlider").value;
-    updateSliderValues(m, b);
-    Plotly.restyle("plot", { y: [getLine(area)] }, [1]);
+    updateSliderValuesLinear(m, b);
+    Plotly.restyle("linearPlot", { y: [getLine(area)] }, [1]);
     updateMSEValue(calculateMSE());
   };
 
@@ -128,12 +129,135 @@ function createInteractivePlot(area, price) {
   document.getElementById("bSlider").addEventListener("input", update);
 }
 
-function updateSliderValues(m, b) {
+function createQuadraticPlot(area, price) {
+  // Initialize with more reasonable default values
+  let a = +document.getElementById("aSlider").value;
+  let b = +document.getElementById("qBSlider").value;
+  let c = +document.getElementById("cSlider").value;
+
+  updateSliderValuesQuadratic(a, b, c);
+
+  const getQuad = (x) => x.map((val) => a * val * val + b * val + c);
+
+  const calculateMSE = () => {
+    const predictions = getQuad(area);
+    let sumSquaredErrors = 0;
+    for (let i = 0; i < area.length; i++) {
+      const error = predictions[i] - price[i];
+      sumSquaredErrors += error * error;
+    }
+    return sumSquaredErrors / area.length;
+  };
+
+  updateMSEValue(calculateMSE());
+
+  const scatter = {
+    x: area,
+    y: price,
+    mode: "markers",
+    name: "Actual Data",
+    type: "scatter",
+    marker: {
+      color: "#d65b28",
+      size: 8,
+      opacity: 0.6,
+      line: { width: 1, color: "#fff" },
+    },
+  };
+
+  const line = {
+    x: [...new Array(100)].map(
+      (_, i) =>
+        Math.min(...area) + ((Math.max(...area) - Math.min(...area)) * i) / 99
+    ),
+    y: [],
+    mode: "lines",
+    name: "Prediction Line",
+    type: "scatter",
+    line: {
+      color: "#000000",
+      width: 4,
+      dash: "solid",
+    },
+  };
+  // Calculate y values for the smoother line
+  line.y = getQuad(line.x);
+
+  const layout = {
+    xaxis: {
+      title: "Living Area (sq ft)",
+      gridcolor: "#e0e0e0",
+      zeroline: false,
+    },
+    yaxis: {
+      title: "Sale Price ($)",
+      gridcolor: "#e0e0e0",
+      zeroline: false,
+    },
+    plot_bgcolor: "#ffffff",
+    paper_bgcolor: "#ffffff",
+    margin: { t: 60, l: 70, r: 30, b: 70 },
+  };
+
+  Plotly.newPlot("quadraticPlot", [scatter, line], layout, {
+    responsive: true,
+    displayModeBar: false,
+  });
+
+  const update = () => {
+    a = +document.getElementById("aSlider").value;
+    b = +document.getElementById("qBSlider").value;
+    c = +document.getElementById("cSlider").value;
+    updateSliderValuesQuadratic(a, b, c);
+
+    const newX = [...new Array(100)].map(
+      (_, i) =>
+        Math.min(...area) + ((Math.max(...area) - Math.min(...area)) * i) / 99
+    );
+    const newY = getQuad(newX);
+
+    Plotly.restyle(
+      "quadraticPlot",
+      {
+        x: [newX],
+        y: [newY],
+      },
+      [1]
+    );
+
+    updateMSEValue(calculateMSE());
+  };
+
+  document.getElementById("aSlider").addEventListener("input", update);
+  document.getElementById("qBSlider").addEventListener("input", update);
+  document.getElementById("cSlider").addEventListener("input", update);
+}
+
+function updateSliderValuesLinear(m, b) {
   document.getElementById("mValue").textContent = m;
-  if (b >= 1000) {
+  if (b >= 1000 || b <= -1000) {
     document.getElementById("bValue").textContent = (b / 1000).toFixed(0) + "k";
   } else {
     document.getElementById("bValue").textContent = b;
+  }
+}
+
+function updateSliderValuesQuadratic(a, b, c) {
+  if (a >= 1000 || a <= -1000) {
+    document.getElementById("aValue").textContent = (a / 1000).toFixed(0) + "k";
+  } else {
+    document.getElementById("aValue").textContent = a;
+  }
+  if (b >= 1000 || b <= -1000) {
+    document.getElementById("qBValue").textContent =
+      (b / 1000).toFixed(0) + "k";
+  } else {
+    document.getElementById("qBValue").textContent = b;
+  }
+  if (c >= 1000 || c <= -1000) {
+    document.getElementById("cValue").textContent = (c / 1000).toFixed(0) + "k";
+  } else {
+    document.getElementById("cValue").textContent = c;
   }
 }
 
@@ -151,9 +275,9 @@ function updateMSEValue(mse) {
 
 const createLossLandscape = async (area, price) => {
   const mMin = 0;
-  const mMax = 500;
-  const bMin = 0;
-  const bMax = 800000;
+  const mMax = 300;
+  const bMin = -100000;
+  const bMax = 100000;
   const gridSize = 20;
 
   const mStep = (mMax - mMin) / (gridSize - 1);

@@ -393,37 +393,93 @@
         <i>parameters</i>. Experiment with different parameter values using the
         sliders below to see how they affect the model.
       </p>
-      <div id="plot" style="height: 600px; max-width: 900px"></div>
+      <div id="linearPlot" style="height: 600px; max-width: 900px"></div>
       <div class="slider-container">
-        <label class="label">Slope m = <span id="mValue">100</span></label>
+        <label class="label">Slope m = <span id="mValue">150</span></label>
         <input
           type="range"
           min="0"
-          max="500"
+          max="300"
           step="1"
-          value="100"
+          value="150"
           id="mSlider"
         />
         <div class="ticks">
           <div class="tick">0</div>
-          <div class="tick">250</div>
-          <div class="tick">500</div>
+          <div class="tick">150</div>
+          <div class="tick">300</div>
         </div>
       </div>
       <div class="slider-container">
-        <label class="label">Intercept b = <span id="bValue">0</span></label>
+        <label class="label"
+          >Intercept b = <span id="bValue">-50000</span></label
+        >
         <input
           type="range"
-          min="0"
-          max="800000"
-          step="500"
-          value="0"
+          min="-100000"
+          max="100000"
+          step="1000"
+          value="-50000"
           id="bSlider"
         />
         <div class="ticks">
+          <div class="tick">-200k</div>
+          <div class="tick">-50k</div>
+          <div class="tick">100k</div>
+        </div>
+      </div>
+      <p>
+        Hmmm. Let's see if we can get better results with a different type of
+        model. Why don't we try a quadratic model: $price = (a)(area)^2 +
+        (b)(area) + c$.
+      </p>
+      <div id="quadraticPlot" style="height: 600px; max-width: 900px"></div>
+      <div class="slider-container">
+        <label class="label">a = <span id="aValue">0.01</span></label>
+        <input
+          type="range"
+          min="0"
+          max="0.1"
+          step="0.001"
+          value="0.01"
+          id="aSlider"
+        />
+        <div class="ticks">
           <div class="tick">0</div>
-          <div class="tick">400k</div>
-          <div class="tick">800k</div>
+          <div class="tick">0.05</div>
+          <div class="tick">0.1</div>
+        </div>
+      </div>
+      <div class="slider-container">
+        <label class="label">b = <span id="qBValue">100</span></label>
+        <input
+          type="range"
+          min="0"
+          max="200"
+          step="1"
+          value="100"
+          id="qBSlider"
+        />
+        <div class="ticks">
+          <div class="tick">0</div>
+          <div class="tick">100</div>
+          <div class="tick">200</div>
+        </div>
+      </div>
+      <div class="slider-container">
+        <label class="label">c = <span id="cValue">0</span></label>
+        <input
+          type="range"
+          min="-100000"
+          max="100000"
+          step="1000"
+          value="0"
+          id="cSlider"
+        />
+        <div class="ticks">
+          <div class="tick">-100k</div>
+          <div class="tick">0</div>
+          <div class="tick">100k</div>
         </div>
       </div>
       <p>
@@ -610,7 +666,19 @@
         real problem: recognizing handwritten digits.
       </p>
       <h3>Digit Recognition</h3>
-      
+      <p>
+        As with the last problem, we'll start by choosing a dataset. The classic
+        dataset for handwritten digits is the MNIST dataset which consists of
+        70,000 images of handwritten digits, each labeled with the correct
+        number from 0 to 9.<d-cite bibtex-key="lecun1998mnist"></d-cite> Let's
+        take a look at some of the examples:
+      </p>
+      <img src="mnist.png" width="100%" />
+      <p>
+        Now as I mentioned before, the only difference between the housing
+        problem and this digit recognition problem is the structure of the
+        model.
+      </p>
       <h2>MusicGen</h2>
     </d-article>
 
