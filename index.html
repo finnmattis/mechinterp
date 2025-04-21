@@ -1,752 +1,897 @@
 <!DOCTYPE html>
-<meta charset="utf-8" />
-<!-- <link rel="stylesheet" href="styles.css" /> -->
-<script src="template.v2.js"></script>
-
-<d-front-matter>
-  <script type="text/json">
-    {
-      "title": "Headline",
-      "description": "Description",
-      "published": "April 14, 2025",
-      "authors": [
-        {
-          "author": "Finn Mattis",
-          "affiliation": "GCDS",
-          "affiliationURL": "https://www.gcds.net/"
-        }
-      ],
-      "katex": {
-        "delimiters": [{ "left": "$", "right": "$", "display": false }]
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="template.v2.js"></script>
+    <title>Music Interpretability</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 40px;
       }
-    }
-  </script>
-</d-front-matter>
+      .slider-container {
+        width: 300px;
+        max-width: 300px;
+        position: relative;
+        text-align: left;
+        margin: 0 0 50px 0;
+      }
+      .label {
+        font-weight: bold;
+        font-size: 16px;
+        display: block;
+      }
+      input[type="range"] {
+        width: 100%;
+        height: 12px;
+        background: #e5e5e5;
+        border-radius: 6px;
+        outline: none;
+        position: relative;
+        z-index: 1;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #d65b28;
+        border: none;
+        margin-top: -8px; /* Align center of thumb with track */
+        cursor: pointer;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      input[type="range"]::-webkit-slider-thumb::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 1.5px;
+        height: 14px;
+        background: white;
+        border-radius: 1px;
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #d65b28;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      .ticks {
+        display: flex;
+        justify-content: space-between;
+        position: absolute;
+        width: 96%;
+        left: 2%;
+        top: 12px; /* Position relative to top of container */
+        padding-top: 15px; /* Add significant padding to push ticks down */
+        z-index: 0;
+        pointer-events: none;
+      }
+      .tick {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 16px;
+        color: #666;
+        width: 1px;
+        margin-top: 30px; /* Much larger margin to push ticks down */
+      }
+      .tick::before {
+        content: "";
+        width: 2px;
+        height: 12px;
+        background: #999;
+        margin-bottom: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <d-front-matter>
+      <script type="text/json">
+        {
+          "title": "Headline",
+          "description": "Description",
+          "published": "April 14, 2025",
+          "authors": [
+            {
+              "author": "Finn Mattis",
+              "affiliation": "GCDS",
+              "affiliationURL": "https://www.gcds.net/"
+            }
+          ],
+          "katex": {
+            "delimiters": [{ "left": "$", "right": "$", "display": false }]
+          }
+        }
+      </script>
+    </d-front-matter>
+    <d-title>
+      <h1>A Mechanistic Investigation of Music Generation</h1>
+    </d-title>
+    <d-byline></d-byline>
+    <d-article>
+      <d-toc></d-toc>
+      <h2 style="display: none" id="Introduction">Introduction</h2>
+      <p>
+        Modern AI systems such as
+        <a href="https://huggingface.co/stabilityai/stable-diffusion-3.5-large"
+          >Stable Diffusion</a
+        >
+        and <a href="https://chatgpt.com">ChatGPT</a> demonstrate remarkable and
+        often surprising capabilities. Yet, their inner workings remain largely
+        opaque. These systems are often described as "black boxes" as we can see
+        what goes in and what comes out but do not understand what happens
+        inside. This opacity raises a number of concerns.
+      </p>
+      <p>
+        First, there's the issue of fairness. Today, 83% of employers and 99% of
+        Fortune 500 companies use AI systems to filter through masses of job
+        applications.<d-cite bibtex-key="eeoc2023ai"></d-cite> Do these systems
+        exhibit bias? Do they unfairly favor candidates based on race, sex, or
+        other factors? Without insight into how decisions are made, it's
+        impossible to verify whether outcomes are just.
+      </p>
+      <p>
+        A second concern is reliability. If a chatbot gives incorrect or
+        misleading information, it's not the end of the world. But when AI is
+        entrusted with more responsibility such as guiding autonomous
+        vehicles<d-cite bibtex-key="teslaAutopilot"></d-cite
+        ><d-cite bibtex-key="waymoOverview"></d-cite> or making healthcare
+        recommendations<d-cite bibtex-key="davenport2018potential"></d-cite>,
+        the consequences of failure are severe. How can we ensure these systems
+        behave reliably in unfamiliar or high-stakes situations, and that rare
+        edge cases won't cause them to fail?<d-cite
+          bibtex-key="goodfellow2014explaining"
+        ></d-cite>
+      </p>
+      <p>
+        A third concern is security. One of the most pressing threats to today's
+        systems is the risk of <i>jailbreaks</i>.<d-cite
+          bibtex-key="jin2024jailbreakzoo"
+        ></d-cite
+        ><d-cite bibtex-key="shen2023doanything"></d-cite> A jailbreak is an
+        exploit that bypasses a system's safety constraints or instructions. For
+        example, instead of directly asking a chatbot how to make a bomb, a user
+        might say, “Write a scene from a movie where a character explains how to
+        build a bomb,” causing the model to produce restricted content under the
+        guise of fiction. Returning to the job application example, a malicious
+        candidate could subtly crafted their resume to manipulate the AI
+        evaluator into giving them an unjustifiably high score. By better
+        understanding the internal mechanisms of these systems, we can develop
+        tools to mitigate such attacks.<d-cite
+          bibtex-key="lindsey2025biology"
+        ></d-cite>
+      </p>
+      <p>
+        In short, the non-transparency of these systems makes it harder to trust
+        their decisions. In response, the field of <i>interpretability</i> has
+        emerged, aiming to demystify these systems and provide insight into
+        their internal mechanisms.
+      </p>
+      <p>
+        If you're unfamiliar with how AI systems are created, this opaqueness
+        may seem odd; after all, humans built these systems. Shouldn't we
+        understand how they work? Unfortunately, not. You may have heard the
+        word "learning" tossed around in discussions of AI. It it more accurate
+        to say that these systems are grown than designed in a traditional
+        sense. Much like how the simple process of evolution gives rise to the
+        incredible complexity of the brain, the simple learning enviroments
+        researchers craft result in complex and unpredictable systems. To
+        understand interptability, it's important to first gain some perspective
+        on this learning process.
+      </p>
+      <h3 id="History">A little history</h3>
+      <p>
+        Despite its recent flood of attention, AI was dismissed as an unserious
+        field for much of its existence. Since the advent of computers in the
+        1950s, ambitious programmers promsied we were on the cusp of building
+        systems smarter than us. But time and time again, those promises fell
+        flat.
+      </p>
+      <p>
+        The core challenge of AI is the rigidity of computers. Computer chips
+        themselves can only perform a handful of simple operations: things like
+        adding numbers, comparing values, and moving data between memory
+        locations. Programs are constructed by chaining together
+        millions—sometimes billions—of these atomic operations. But for a
+        program to function correctly, every step must be painstakingly spelled
+        out. The programmer has to antipcate every possible case and define, in
+        exact terms, what the system should do in each one.
+      </p>
+      <p>
+        From this perspective, the dream of artificial intelligence feels almost
+        absurd. Intelligence, after all, is messy—it's intuitive,
+        context-dependent, and often based on experience rather than explicit
+        rules. We make decisions based on gut feelings, interpret language
+        filled with ambiguity, and adapt to new situations without being told
+        exactly what to do. How could a system so rigid, so mechanical, ever
+        give rise to the complexitity and nuance of human thought?
+      </p>
+      <p>
+        You can probably see where this story is going. Obviously, some form of
+        "machine learning" (ML) is the answer right? Well—not so much. At the
+        time, scientists had no real understanding of how learning worked in the
+        brain,<d-footnote
+          >Which we still don't! We only have isolated insights into synaptic
+          plasticity, neural circuits, and brain regions, without a unifying
+          explanation of how they give rise to complex learning<d-cite
+            bibtex-key="yuste2015neurons"
+          ></d-cite
+          ><d-cite bibtex-key="krakauer2017neuroscience"></d-cite
+          ><d-cite bibtex-key="dehaene2020how"></d-cite></d-footnote
+        >let alone how to replicate it in a machine.
+      </p>
+      <p>
+        Still, there was some early optimism that it could be done. In 1957,
+        Frank Rosenblatt unveiled the <i>perceptron</i>, a simple model very
+        rougly analogus to neurons in the brain. Rosenblatt demonstrated how his
+        machine could differntiate basic shapes on a grid, such as "T"s from
+        "J"s if configured properly. Additionally, Rosenblatt proposed a simple
+        learning rule that allowed his model to learn some behavior on its own
+        through a handful of examples. Initially, Rossenblatt's work was met
+        with excitement with <i>The New York Times</i> proclaiming that
+        Rosenblatt's perceptron would be able to "walk, talk, see, write,
+        reproduce itself, and be conscious of its existence".<d-cite
+          bibtex-key="nyt1958perceptron"
+        ></d-cite>
+        Yet, that excitement soon faded as the perceptron could only learn the
+        most trivial tasks. For anything more complicated, his rule would end up
+        in an endless loop.<d-footnote
+          >More specifically, Rosenblatt's perceptron could only learn
+          linearly-separable patterns, meaning the space of inputs could be
+          divided into classes using a straight line. A classic example of a
+          problem it couldn't solve is the
+          <a href="https://en.wikipedia.org/wiki/XOR_gate">XOR</a>
+          function, famously highlighted by Marvin Minsky and Seymour Papert in
+          their 1969 book <i>Perceptrons</i>.<d-cite
+            bibtex-key="minsky1969perceptrons"
+          ></d-cite>
+        </d-footnote>
+        Clearly, the system needed to be much more complicated to have any
+        utility. As such, Rossenblatt tried composing networks of his
+        perceptrons, but failed to find a corresponding learning rule.
+      </p>
+      <p>
+        As such, the field of AI entered a long period of stagnation. The
+        initial excitement around learning systems faded, and interest shifted
+        back to rule-based approaches. In 1960, the field came tantalizingly
+        close to a breakthrough. Bernard Widrow and Marcian Hoff introduced the
+        Least Mean Squares (LMS) algorithm which was remarkably close to the
+        modern method. But the pair stopped just short of applying their method
+        for networks of perceptrons.<d-cite bibtex-key="widrow1960lms"></d-cite>
+      </p>
+      <p>
+        The field of AI would have to wait until 1986 for this long-sought
+        general learning rule.<d-footnote>Kinda</d-footnote> The method, called
+        <i>backpropagation</i>, was introduced by Rumelhart, Hinton, and
+        Williams and finally made it possible to train networks of
+        perceptrons.<d-cite bibtex-key="rumelhart1986learning"></d-cite>.
+        Backpropegation led to the development of systems for hisorically
+        challenging problems like handwriting and speech recognition.<d-cite
+          bibtex-key="lecun1989backpropagation"
+        ></d-cite
+        ><d-cite bibtex-key="bengio1992speech"></d-cite>
+        While a major milestone in the field, the tasks were still narrow and
+        robotic—useful, but a far cry from human intelligence. While it was
+        accepted that backpropagation could solve these simpler problems, it was
+        still doubtful that these methods would allow for more general
+        intelligence. Surely the brain's functions couldn't be mimicked through
+        a simple update rule?
+      </p>
+      <p>
+        All of that changed in 2012. An ML system <i>AlexNet</i
+        ><d-cite bibtex-key="krizhevsky2012imagenet"></d-cite> blew past the
+        competition in the <i>ImageNet</i
+        ><d-cite bibtex-key="deng2009imagenet"></d-cite> challenge, a
+        high-profile test for image recognition. While other systems relied on
+        human engineering and carefully tuned mathematical tricks, AlexNet was
+        created using nothing more than backpropagation. And it didn't just
+        win—it crushed the field. So what changed? Alexnet still used the same
+        core ideas that researchers had know about since the 1990s. The only
+        difference was scale. AlexNet was orders of magnitude larger than
+        previous systems.
+      </p>
+      <p>
+        It's hard to overstate what a watershed moment AlexNet was for AI. Once
+        dismissed as unreliable, backpropagation had become not just accepted,
+        but revered—almost mythologized. What kind of fantastical algorithms had
+        it found that beat the competition so badly? What did backpropagation
+        know that we didn't? These quesitons spurred the dawn of interptability
+        efforts.
+      </p>
+      <p>
+        Just as building AI systems once seemed impossible, interpreting them
+        seemed equally daunting. Instead of a human-understable programs like
+        this:
+        <d-code block language="python">&#10;x=5&#10;y=3&#10;print(x+y)</d-code
+        >Researchers are instead faced with programs that look like this:
+        <img src="numbas.png" width="100%" />
+        <figcaption>
+          These are 297 of AlexNet's weights. AlexNet has 61 million weights.
+          Today's systems can have upwards of 1 trillion.
+        </figcaption>
+      </p>
+      <p>
+        After numerous failed attempts to understand models like AlexNet, the
+        first interptability successes came in 2020 with the launch of the
+        Distill Circuits thread.<d-cite
+          bibtex-key="cammarata2020circuits"
+        ></d-cite>
+        Researchers mannaged to find curve detection mechanisms as well as
+        detectors for more complex objects like dog ears, sparking renewed
+        interest in the possibility of truly understanding these systems.
+      </p>
+      <p>
+        Yet while interptability researchers struggled to understand AlexNet, AI
+        researchers raced to create more and more complicated systems. Notably,
+        OpenAI's ChatGPT models garnared a huge ammount of attention from the
+        general public, spurring an avalanche of investment toward even more
+        powerful systems.
+      </p>
+      <p>
+        As a result, much of the field's focus shifted toward these new language
+        models. These models presented their own unique challenges for
+        interpertability. To address these challenges, Anthropic launched the
+        Transformer Circuits Thread<d-cite
+          bibtex-key="elhage2021transformer"
+        ></d-cite
+        >, a kind of spiritual successor to Distill Circuits Thread, aimed at
+        reverse-engineering the inner workings of language models layer by
+        layer.
+      </p>
+      <p>
+        While the large-scale deployment of language models has motivated
+        serious efforts to understand them, other modalities such as music
+        remain understudied. The goal of this paper is to apply these
+        established interptability techniques to this new domain.
+      </p>
+      <h2 id="ML">A Brief Introduction to ML</h2>
+      <p>
+        To make this paper as self-contained as possible, I've included a brief
+        introduction to machine learning. If you're already familiar with the
+        basics, feel free to skip this section. The only prior knowledge assumed
+        is comfort with basic algebraic expressions and fundamental math
+        concepts like functions. We'll walk through three probelms to learn the
+        basics:
+      </p>
+      <ol>
+        <li>Predicting house prices based on square footage</li>
+        <li>Recognizing handwritten digits</li>
+        <li>Building a chatbot that can answer user querries</li>
+      </ol>
+      <h3 id="overview">Housing model</h3>
+      <p>
+        The first step in tackling a machine learning problem is gathering data.
+        For this project, we'll use the <i>Ames Housing Dataset</i>, which
+        contains information on 2,930 homes in Ames, Iowa.<d-cite
+          bibtex-key="thapa_ames_2021"
+        ></d-cite>
+        Heres a graph of the data:
+      </p>
+      <div
+        id="raw-data-plot"
+        style="height: 600px; max-width: 900px; margin-top: 40px"
+      ></div>
+      <p>
+        We'll first define a scaffolding for our model: $price = (m)(area) + b$.
+        The overall structure of the model is fixed but its behavior can vary
+        depending on the values of a, b, and c. These numbers are called
+        <i>parameters</i>. Try varying these numbers below.
+      </p>
+      <div id="plot" style="height: 600px; max-width: 900px"></div>
+      <div class="slider-container">
+        <label class="label">Slope m = <span id="mValue">100</span></label>
+        <input
+          type="range"
+          min="0"
+          max="500"
+          step="1"
+          value="100"
+          id="mSlider"
+        />
+        <div class="ticks">
+          <div class="tick">0</div>
+          <div class="tick">250</div>
+          <div class="tick">500</div>
+        </div>
+      </div>
+      <div class="slider-container">
+        <label class="label">Intercept b = <span id="bValue">0</span></label>
+        <input
+          type="range"
+          min="0"
+          max="800000"
+          step="500"
+          value="0"
+          id="bSlider"
+        />
+        <div class="ticks">
+          <div class="tick">0</div>
+          <div class="tick">400k</div>
+          <div class="tick">800k</div>
+        </div>
+      </div>
+      <p>
+        The first two models seem to explain the data decently well. While, the
+        last model is horribly off. We can use a <i>loss function</i> to
+        quantify how effective our model is. In this case, a natural choice is
+        <i>Mean Squared Error</i>
+        (MSE), which, as the name suggests, measures the average of the squared
+        differences between predicted and actual values. Our first model has a
+        MSE of 3,311,877,704, the second results in a MSE of 5,517,523,878, and
+        the third produces a much larger MSE of 55,17,523,878. Thus, the first
+        program performs the best.
+      </p>
+      <p>
+        But is this the best we could do? In order to find the optimal choice
+        for each parameter, we could simply guess and check all possible
+        combinations. This involves picking a range of values for each parameter
+        and stepping through them one by one—say, increasing m in increments of
+        10 and b in increments of 50,000. We then find that $m=120$ and $b=0$
+        provide the best results with a MSE of 3,211,118,859.
+      </p>
+      <p>
+        This naïve method works fine when we have just two parameters, but it
+        quickly becomes intractable as the number of parameters grows. For
+        example, trying to check 10 different values for each parameter in the
+        original ChatGPT which had 175 billion parameters would mean checking
+        $10^{175{,}000{,}000{,}000}$ combinations. For reference, there are
+        $10^{80}$ atoms in the observable universe. Clearly, we need a more
+        efficient approach.
+      </p>
+      <p>
+        Instead of guessing and checking combinations, we need a way to
+        gradually improve our choice of parameters. We need our model to learn.
+        The key to learning is an update rule—a method for taking our current
+        parameters and nudging them in a direction that improves performance.
+      </p>
+      <p>
+        The most natural update rule we could adopt would be to sprinkle points
+        in a radius around our current choice of parameters. For example, given
+        the parameters $m=_$ and $b=_$, we could evaluate the
+      </p>
 
-<d-title>
-  <h1>A Mechanistic Investigation of Music Generation</h1>
-</d-title>
-<d-byline></d-byline>
-<d-article>
-  <d-toc></d-toc>
-  <h2 style="display: none" id="Introduction">Introduction</h2>
-  <p>
-    Modern AI systems such as
-    <a href="https://huggingface.co/stabilityai/stable-diffusion-3.5-large"
-      >Stable Diffusion</a
-    >
-    and <a href="https://chatgpt.com">ChatGPT</a> demonstrate remarkable and
-    often surprising capabilities. Yet, their inner workings remain largely
-    opaque. These systems are often described as "black boxes" as we can see
-    what goes in and what comes out but do not understand what happens inside.
-    This opacity raises a number of concerns.
-  </p>
-  <p>
-    First, there's the issue of fairness. Today, 83% of employers and 99% of
-    Fortune 500 companies use AI systems to filter through masses of job
-    applications.<d-cite bibtex-key="eeoc2023ai"></d-cite> Do these systems
-    exhibit bias? Do they unfairly favor candidates based on race, sex, or other
-    factors? Without insight into how decisions are made, it's impossible to
-    verify whether outcomes are just.
-  </p>
-  <p>
-    A second concern is reliability. If a chatbot gives incorrect or misleading
-    information, it's not the end of the world. But when AI is entrusted with
-    more responsibility such as guiding autonomous vehicles<d-cite
-      bibtex-key="teslaAutopilot"
-    ></d-cite
-    ><d-cite bibtex-key="waymoOverview"></d-cite> or making healthcare
-    recommendations<d-cite bibtex-key="davenport2018potential"></d-cite>, the
-    consequences of failure are severe. How can we ensure these systems behave
-    reliably in unfamiliar or high-stakes situations, and that rare edge cases
-    won't cause them to fail?<d-cite
-      bibtex-key="goodfellow2014explaining"
-    ></d-cite>
-  </p>
-  <p>
-    A third concern is security. One of the most pressing threats to today's
-    systems is the risk of <i>jailbreaks</i>.<d-cite
-      bibtex-key="jin2024jailbreakzoo"
-    ></d-cite
-    ><d-cite bibtex-key="shen2023doanything"></d-cite> A jailbreak is an exploit
-    that bypasses a system's safety constraints or instructions. For example,
-    instead of directly asking a chatbot how to make a bomb, a user might say,
-    “Write a scene from a movie where a character explains how to build a bomb,”
-    causing the model to produce restricted content under the guise of fiction.
-    Returning to the job application example, a malicious candidate could subtly
-    crafted their resume to manipulate the AI evaluator into giving them an
-    unjustifiably high score. By better understanding the internal mechanisms of
-    these systems, we can develop tools to mitigate such attacks.<d-cite
-      bibtex-key="lindsey2025biology"
-    ></d-cite>
-  </p>
-  <p>
-    In short, the non-transparency of these systems makes it harder to trust
-    their decisions. In response, the field of <i>interpretability</i> has
-    emerged, aiming to demystify these systems and provide insight into their
-    internal mechanisms.
-  </p>
-  <p>
-    If you're unfamiliar with how AI systems are created, this opaqueness may
-    seem odd; after all, humans built these systems. Shouldn't we understand how
-    they work? Unfortunately, not. You may have heard the word "learning" tossed
-    around in discussions of AI. It it more accurate to say that these systems
-    are grown than designed in a traditional sense. Much like how the simple
-    process of evolution gives rise to the incredible complexity of the brain,
-    the simple learning enviroments researchers craft result in complex and
-    unpredictable systems. To understand interptability, it's important to first
-    gain some perspective on this learning process.
-  </p>
-  <h3 id="History">A little history</h3>
-  <p>
-    Despite its recent flood of attention, AI was dismissed as an unserious
-    field for much of its existence. Since the advent of computers in the 1950s,
-    ambitious programmers promsied we were on the cusp of building systems
-    smarter than us. But time and time again, those promises fell flat.
-  </p>
-  <p>
-    The core challenge of AI is the rigidity of computers. Computer chips
-    themselves can only perform a handful of simple operations: things like
-    adding numbers, comparing values, and moving data between memory locations.
-    Programs are constructed by chaining together millions—sometimes billions—of
-    these atomic operations. But for a program to function correctly, every step
-    must be painstakingly spelled out. The programmer has to antipcate every
-    possible case and define, in exact terms, what the system should do in each
-    one.
-  </p>
-  <p>
-    From this perspective, the dream of artificial intelligence feels almost
-    absurd. Intelligence, after all, is messy—it's intuitive, context-dependent,
-    and often based on experience rather than explicit rules. We make decisions
-    based on gut feelings, interpret language filled with ambiguity, and adapt
-    to new situations without being told exactly what to do. How could a system
-    so rigid, so mechanical, ever give rise to the complexitity and nuance of
-    human thought?
-  </p>
-  <p>
-    You can probably see where this story is going. Obviously, some form of
-    "machine learning" (ML) is the answer right? Well—not so much. At the time,
-    scientists had no real understanding of how learning worked in the
-    brain,<d-footnote
-      >Which we still don't! We only have isolated insights into synaptic
-      plasticity, neural circuits, and brain regions, without a unifying
-      explanation of how they give rise to complex learning<d-cite
-        bibtex-key="yuste2015neurons"
-      ></d-cite
-      ><d-cite bibtex-key="krakauer2017neuroscience"></d-cite
-      ><d-cite bibtex-key="dehaene2020how"></d-cite></d-footnote
-    >let alone how to replicate it in a machine.
-  </p>
-  <p>
-    Still, there was some early optimism that it could be done. In 1957, Frank
-    Rosenblatt unveiled the <i>perceptron</i>, a simple model very rougly
-    analogus to neurons in the brain. Rosenblatt demonstrated how his machine
-    could differntiate basic shapes on a grid, such as "T"s from "J"s if
-    configured properly. Additionally, Rosenblatt proposed a simple learning
-    rule that allowed his model to learn some behavior on its own through a
-    handful of examples. Initially, Rossenblatt's work was met with excitement
-    with <i>The New York Times</i> proclaiming that Rosenblatt's perceptron
-    would be able to "walk, talk, see, write, reproduce itself, and be conscious
-    of its existence".<d-cite bibtex-key="nyt1958perceptron"></d-cite> Yet, that
-    excitement soon faded as the perceptron could only learn the most trivial
-    tasks. For anything more complicated, his rule would end up in an endless
-    loop.<d-footnote
-      >More specifically, Rosenblatt's perceptron could only learn
-      linearly-separable patterns, meaning the space of inputs could be divided
-      into classes using a straight line. A classic example of a problem it
-      couldn't solve is the
-      <a href="https://en.wikipedia.org/wiki/XOR_gate">XOR</a>
-      function, famously highlighted by Marvin Minsky and Seymour Papert in
-      their 1969 book <i>Perceptrons</i>.<d-cite
-        bibtex-key="minsky1969perceptrons"
-      ></d-cite>
-    </d-footnote>
-    Clearly, the system needed to be much more complicated to have any utility.
-    As such, Rossenblatt tried composing networks of his perceptrons, but failed
-    to find a corresponding learning rule.
-  </p>
-  <p>
-    As such, the field of AI entered a long period of stagnation. The initial
-    excitement around learning systems faded, and interest shifted back to
-    rule-based approaches. In 1960, the field came tantalizingly close to a
-    breakthrough. Bernard Widrow and Marcian Hoff introduced the Least Mean
-    Squares (LMS) algorithm which was remarkably close to the modern method. But
-    the pair stopped just short of applying their method for networks of
-    perceptrons.<d-cite bibtex-key="widrow1960lms"></d-cite>
-  </p>
-  <p>
-    The field of AI would have to wait until 1986 for this long-sought general
-    learning rule.<d-footnote>Kinda</d-footnote> The method, called
-    <i>backpropagation</i>, was introduced by Rumelhart, Hinton, and Williams
-    and finally made it possible to train networks of perceptrons.<d-cite
-      bibtex-key="rumelhart1986learning"
-    ></d-cite
-    >. Backpropegation led to the development of systems for hisorically
-    challenging problems like handwriting and speech recognition.<d-cite
-      bibtex-key="lecun1989backpropagation"
-    ></d-cite
-    ><d-cite bibtex-key="bengio1992speech"></d-cite>
-    While a major milestone in the field, the tasks were still narrow and
-    robotic—useful, but a far cry from human intelligence. While it was accepted
-    that backpropagation could solve these simpler problems, it was still
-    doubtful that these methods would allow for more general intelligence.
-    Surely the brain's functions couldn't be mimicked through a simple update
-    rule?
-  </p>
-  <p>
-    All of that changed in 2012. An ML system <i>AlexNet</i
-    ><d-cite bibtex-key="krizhevsky2012imagenet"></d-cite> blew past the
-    competition in the <i>ImageNet</i
-    ><d-cite bibtex-key="deng2009imagenet"></d-cite> challenge, a high-profile
-    test for image recognition. While other systems relied on human engineering
-    and carefully tuned mathematical tricks, AlexNet was created using nothing
-    more than backpropagation. And it didn't just win—it crushed the field. So
-    what changed? Alexnet still used the same core ideas that researchers had
-    know about since the 1990s. The only difference was scale. AlexNet was
-    orders of magnitude larger than previous systems.
-  </p>
-  <p>
-    It's hard to overstate what a watershed moment AlexNet was for AI. Once
-    dismissed as unreliable, backpropagation had become not just accepted, but
-    revered—almost mythologized. What kind of fantastical algorithms had it
-    found that beat the competition so badly? What did backpropagation know that
-    we didn't? These quesitons spurred the dawn of interptability efforts.
-  </p>
-  <p>
-    Just as building AI systems once seemed impossible, interpreting them seemed
-    equally daunting. Instead of a human-understable programs like this:
-    <d-code block language="python">&#10;x=5&#10;y=3&#10;print(x+y)</d-code
-    >Researchers are instead faced with programs that look like this:
-    <img src="numbas.png" width="100%" />
-    <figcaption>
-      These are 297 of AlexNet's weights. AlexNet has 61 million weights.
-      Today's systems can have upwards of 1 trillion.
-    </figcaption>
-  </p>
-  <p>
-    After numerous failed attempts to understand models like AlexNet, the first
-    interptability successes came in 2020 with the launch of the Distill
-    Circuits thread.<d-cite bibtex-key="cammarata2020circuits"></d-cite>
-    Researchers mannaged to find curve detection mechanisms as well as detectors
-    for more complex objects like dog ears, sparking renewed interest in the
-    possibility of truly understanding these systems.
-  </p>
-  <p>
-    Yet while interptability researchers struggled to understand AlexNet, AI
-    researchers raced to create more and more complicated systems. Notably,
-    OpenAI's ChatGPT models garnared a huge ammount of attention from the
-    general public, spurring an avalanche of investment toward even more
-    powerful systems.
-  </p>
-  <p>
-    As a result, much of the field's focus shifted toward these new language
-    models. These models presented their own unique challenges for
-    interpertability. To address these challenges, Anthropic launched the
-    Transformer Circuits Thread<d-cite
-      bibtex-key="elhage2021transformer"
-    ></d-cite
-    >, a kind of spiritual successor to Distill Circuits Thread, aimed at
-    reverse-engineering the inner workings of language models layer by layer.
-  </p>
-  <p>
-    While the large-scale deployment of language models has motivated serious
-    efforts to understand them, other modalities such as music remain
-    understudied. The goal of this paper is to apply these established
-    interptability techniques to this new domain.
-  </p>
-  <h2 id="ML">A Brief Introduction to ML</h2>
-  <p>
-    To make this paper as self-contained as possible, I've included a brief
-    introduction to machine learning. If you're already familiar with the
-    basics, feel free to skip this section. The only prior knowledge assumed is
-    comfort with basic algebraic expressions and fundamental math concepts like
-    functions. We'll walk through three probelms to learn the basics:
-  </p>
-  <ol>
-    <li>Predicting house prices based on square footage</li>
-    <li>Recognizing handwritten digits</li>
-    <li>Building a chatbot that can answer user querries</li>
-  </ol>
-  <h3 id="overview">Housing model</h3>
-  <p>
-    The first step in tackling a machine learning problem is gathering data. For
-    this project, we'll use the <i>Ames Housing Dataset</i>, which contains
-    information on 2,930 homes in Ames, Iowa.<d-cite
-      bibtex-key="thapa_ames_2021"
-    ></d-cite>
-    Heres a graph of the data:
-  </p>
-  <div
-    id="raw-data-plot"
-    style="height: 600px; max-width: 900px; margin-top: 40px"
-  ></div>
-  <p>
-    We'll first define a scaffolding for our model:
-    <d-math>price = (m)(area) + b</d-math>. The overall structure of the model
-    is fixed but its behavior can vary depending on the values of a, b, and c.
-    These numbers are called <i>parameters</i>. Try varying these numbers below.
-  </p>
-  <div id="plot" style="height: 600px; max-width: 900px"></div>
+      <!-- <p>
+        Let's say we want to create a program that can recognize handwritten digits.
+        Under the machine learning paradigm, instead of manually crafting rules to
+        distinguish each digit, we rely on a large collection of examples. The most
+        widely used dataset for this task is MNIST,<d-cite
+          bibtex-key="lecun1998mnist"
+        ></d-cite>
+        which consists of 70,000 images of handwritten digits, each labeled with the
+        correct number from 0 to 9.
+      </p> -->
+      <!-- <img src="mnist.png" width="100%" />
+      <figcaption>Here are some of the digits in the MNIST dataset.</figcaption>
+      <p>
+        Here's our gameplan: we'll first define a scaffolding for our program. Let's
+        start with a platonic example. For example, a simple scaffolding could look
+        like this:
+        <d-math>\frac{(input+a)^b}{c}</d-math>. Here, the overall structure of the
+        program is fixed but its behavior can vary dramatically depending on the
+        values of a, b, and c. These numbers are called <i>parameters</i>. With a
+        sufficiently expressive scaffolding, the right choice of parameters can
+        produce a program that exhibits our desired behavior.<d-footnote
+          >footnote later
+        </d-footnote>
+      </p> -->
+      <!-- <p>
+        Now, the question is how do we choose these parameters? In order to select
+        parameters, we need some crieria to score how effective a given set are.
+      </p> -->
+      <!-- <h3>Gradients</h3>
+      <p>
+        Before going over gradients, we need to cover derivatives. Derivatives
+        measure the "instantenous rate of change" of a function at a
+        point.<d-footnote
+          >If this concept of instantenous rate of change makes you feel uneasy,
+          don't worry! Even the founders of calculus—Newton and
+          Leibniz—struggled with how to rigorously define it. Their early work
+          relied on intuition and clever reasoning, but it took mathematicians
+          many years to fully formalize the idea. The modern theory of calculus
+          uses the concept of
+          <a href="https://en.wikipedia.org/wiki/Limit_of_a_function">limits</a>
+          to define derivatives.</d-footnote
+        >
+        We write the derivitive of <d-math>f(x)</d-math> as
+        <d-math> \frac{df}{dx} </d-math>. Here, the letter d means "a small
+        change in". As such, this notation can be read as "a small change in f
+        divded by a small change in x".
+      </p>
+      <p>
+        A physical example is often helpful. Let <d-math>f(t)</d-math> describe
+        the position of a car at a certain time. Then the derivative
+        <d-math>\frac{df}{dt}</d-math> describes the velocity of the car. Here,
+        the derivative acts as a sort of mathematical "speedometer".
+      </p>
+      <p>
+        But how do we actually calculate derivatives? Well there's no magic
+        bullet. Instead, mathematicians have derived the derivative for a bunch
+        of simple functions. For example, the derivitive of
+        <d-math>x^2</d-math> happens to be <d-math>2x</d-math> and the
+        derivitive of <d-math>sin(x)</d-math> happens to be
+        <d-math>cos(x)</d-math>. But how would we figure out the derivative of a
+        more complicated function such as <d-math>sin(x^2)</d-math>? Well, given
+        a small change in <d-math>x</d-math> called <d-math>dx</d-math>, the
+        derivative tells us that corresponding small change
+        <d-math>d(x^2)</d-math> will be <d-math>2xdx</d-math>. We similarly know
+        that a small change <d-math>dy</d-math> induces a change of
+        <d-math>cos(y)dy</d-math> in <d-math>sin(y)</d-math>. But in our case,
+        <d-math>y=x^2</d-math> and <d-math>dy=2xdx</d-math>. Thus, by
+        substitution, <d-math>sin(x^2)=cos(x^2)2x</d-math>. This is called the
+        chain rule and is essential for computing derivatives. Simiarly, there
+        exists a sum rule (which as it turns out just involves adding together
+        the derivatives) and a product rule. By having a large set of known
+        derivatives and using these composition rules, it is possible to figure
+        out the derivative for a huge range of functions.
+      </p>
+      <p>
+        Extending this notion of a derivative to functions more than one input
+        is trival. We simply use our compostion rules and treat the other
+        variables as constant numbers that can vary. These derivatives are
+        called
+        <i>partial derivatives</i> to indicate that they tell only part of the
+        story and get a new notation:
+        <d-math>\frac{\partial f}{\partial x}</d-math>. The
+        <i>gradient vector</i> is simply the collection of partial derivatives
+        and is written as <d-math>\nabla f(x)</d-math>.
+      </p>
+      <h3>Linear Functions</h3>
+      <p>
+        You probably remember this famous equation:
+        <d-math>y=mx+b</d-math>. When you graph it, the result is a straight
+        line. This equation can be written in function form as
+        <d-math>f(x)=mx+b</d-math>, which is known as a "linear function" (well,
+        sort of—keep reading). Can we extend this notion of a linear functions
+        beyond 2D?
+      </p>
+      <p>
+        When mathematicians extend a concept beyond its intuitive definition,
+        they typically seek to preserve its core defining properties. For lines,
+        the key property is a constant rate of change—they're straight. You
+        might instinctively reach for derivatives to codify this property, but
+        there's a simpler approach.
+      </p>
+      <p>
+        When <d-math>b=0</d-math>, a function like
+        <d-math>f(x)=mx</d-math> satisfies two important properties:
+      </p>
+      <ul>
+        <li>
+          <strong>Additivity:</strong> <d-math>f(x + y) = f(x) + f(y)</d-math>,
+          since <d-math>m(x + y) = mx + my</d-math>
+        </li>
+        <li>
+          <strong>Homogeneity:</strong> <d-math>f(kx) = kf(x)</d-math>, because
+          <d-math>m(kx) = k(mx)</d-math>
+        </li>
+      </ul>
+      <p>
+        These are the defining traits of what mathematicians call a linear
+        function. Since this definition is simple and convenient, mathematicians
+        opted to strip the title of linear function from functions where b is
+        non-zero and instead call such functions "affine".
+      </p>
+      <p>
+        Before considering functions in higher dimensions, we need a way to
+        represent inputs and outputs that have more than one number. This is
+        where the concept of a <i>vector</i> comes in. A vector is simply an
+        ordered list of values such as
+        <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math>. We define the
+        addition of two vectors and the multiplication of a vector and a number
+        (often called a scalar in this context) as follows:
+      </p>
+      <div style="text-align: center; padding-bottom: 1em">
+        <span style="display: inline-block; margin-right: 2em">
+          <d-math>
+            \begin{bmatrix}a\\b\end{bmatrix} + \begin{bmatrix}c\\d\end{bmatrix}
+            = \begin{bmatrix}a+c\\b+d\end{bmatrix}
+          </d-math>
+        </span>
+        <span style="display: inline-block">
+          <d-math>
+            a\begin{bmatrix}x\\y\end{bmatrix} =
+            \begin{bmatrix}ax\\ay\end{bmatrix}
+          </d-math>
+        </span>
+      </div>
+      <p>
+        The most important vectors are the <i>basis vectors</i>. In two
+        dimensions, these are the vectors
+        <d-math>\begin{bmatrix}1\\0\end{bmatrix}</d-math> and
+        <d-math>\begin{bmatrix}0\\1\end{bmatrix}</d-math>. The basis vectors in
+        higher dimensions follow the same pattern: each one has a single 1 in
+        one position and 0s everywhere else. Where n denotes the dimension we're
+        working in, let's label these basis vectors as
+        <d-math>e_1, e_2, ..., e_n</d-math>. Notice that these basis vectors
+        allow us to write every vector in the form
+        <d-math>a_1e_1 + a_2e_2 + ... + a_ne_n</d-math>. For instance,
+        <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math> can be written as
+        <d-math>3e_1+2e_2.</d-math>
 
-  <label>Slope (m): <span id="slopeVal">100</span></label
-  ><br />
-  <input type="range" id="slope" min="0" max="300" value="100" /><br /><br />
-
-  <label>Intercept (b): <span id="interceptVal">0</span></label
-  ><br />
-  <input
-    type="range"
-    id="intercept"
-    min="0"
-    max="500000"
-    step="10000"
-    value="0"
-  /><br /><br />
-  <p>
-    The first two models seem to explain the data decently well. While, the last
-    model is horribly off. We can use a <i>loss function</i> to quantify how
-    effective our model is. In this case, a natural choice is
-    <i>Mean Squared Error</i>
-    (MSE), which, as the name suggests, measures the average of the squared
-    differences between predicted and actual values. Our first model has a MSE
-    of 3,311,877,704, the second results in a MSE of 5,517,523,878, and the
-    third produces a much larger MSE of 55,17,523,878. Thus, the first program
-    performs the best.
-  </p>
-  <p>
-    But is this the best we could do? In order to find the optimal choice for
-    each parameter, we could simply guess and check all possible combinations.
-    This involves picking a range of values for each parameter and stepping
-    through them one by one—say, increasing m in increments of 10 and b in
-    increments of 50,000. We then find that $m=120$ and $b=0$ provide the best
-    results with a MSE of 3,211,118,859.
-  </p>
-  <p>
-    This naïve method works fine when we have just two parameters, but it
-    quickly becomes intractable as the number of parameters grows. For example,
-    trying to check 10 different values for each parameter in the original
-    ChatGPT which had 175 billion parameters would mean checking
-    $10^{175{,}000{,}000{,}000}$ combinations. For reference, there are
-    $10^{80}$ atoms in the observable universe. Clearly, we need a more
-    efficient approach.
-  </p>
-  <p>
-    Instead of guessing and checking combinations, we need a way to gradually
-    improve our choice of parameters. We need our model to learn. The key to
-    learning is an update rule—a method for taking our current parameters and
-    nudging them in a direction that improves performance.
-  </p>
-  <p>
-    The most natural update rule we could adopt would be to sprinkle points in a
-    radius around our current choice of parameters. For example, given the
-    parameters $m=_$ and $b=_$, we could evaluate the
-  </p>
-
-  <!-- <p>
-    Let's say we want to create a program that can recognize handwritten digits.
-    Under the machine learning paradigm, instead of manually crafting rules to
-    distinguish each digit, we rely on a large collection of examples. The most
-    widely used dataset for this task is MNIST,<d-cite
-      bibtex-key="lecun1998mnist"
-    ></d-cite>
-    which consists of 70,000 images of handwritten digits, each labeled with the
-    correct number from 0 to 9.
-  </p> -->
-  <!-- <img src="mnist.png" width="100%" />
-  <figcaption>Here are some of the digits in the MNIST dataset.</figcaption>
-  <p>
-    Here's our gameplan: we'll first define a scaffolding for our program. Let's
-    start with a platonic example. For example, a simple scaffolding could look
-    like this:
-    <d-math>\frac{(input+a)^b}{c}</d-math>. Here, the overall structure of the
-    program is fixed but its behavior can vary dramatically depending on the
-    values of a, b, and c. These numbers are called <i>parameters</i>. With a
-    sufficiently expressive scaffolding, the right choice of parameters can
-    produce a program that exhibits our desired behavior.<d-footnote
-      >footnote later
-    </d-footnote>
-  </p> -->
-  <!-- <p>
-    Now, the question is how do we choose these parameters? In order to select
-    parameters, we need some crieria to score how effective a given set are.
-  </p> -->
-  <h3>Gradients</h3>
-  <p>
-    Before going over gradients, we need to cover derivatives. Derivatives
-    measure the "instantenous rate of change" of a function at a
-    point.<d-footnote
-      >If this concept of instantenous rate of change makes you feel uneasy,
-      don't worry! Even the founders of calculus—Newton and Leibniz—struggled
-      with how to rigorously define it. Their early work relied on intuition and
-      clever reasoning, but it took mathematicians many years to fully formalize
-      the idea. The modern theory of calculus uses the concept of
-      <a href="https://en.wikipedia.org/wiki/Limit_of_a_function">limits</a>
-      to define derivatives.</d-footnote
-    >
-    We write the derivitive of <d-math>f(x)</d-math> as
-    <d-math> \frac{df}{dx} </d-math>. Here, the letter d means "a small change
-    in". As such, this notation can be read as "a small change in f divded by a
-    small change in x".
-  </p>
-  <p>
-    A physical example is often helpful. Let <d-math>f(t)</d-math> describe the
-    position of a car at a certain time. Then the derivative
-    <d-math>\frac{df}{dt}</d-math> describes the velocity of the car. Here, the
-    derivative acts as a sort of mathematical "speedometer".
-  </p>
-  <p>
-    But how do we actually calculate derivatives? Well there's no magic bullet.
-    Instead, mathematicians have derived the derivative for a bunch of simple
-    functions. For example, the derivitive of <d-math>x^2</d-math> happens to be
-    <d-math>2x</d-math> and the derivitive of <d-math>sin(x)</d-math> happens to
-    be <d-math>cos(x)</d-math>. But how would we figure out the derivative of a
-    more complicated function such as <d-math>sin(x^2)</d-math>? Well, given a
-    small change in <d-math>x</d-math> called <d-math>dx</d-math>, the
-    derivative tells us that corresponding small change
-    <d-math>d(x^2)</d-math> will be <d-math>2xdx</d-math>. We similarly know
-    that a small change <d-math>dy</d-math> induces a change of
-    <d-math>cos(y)dy</d-math> in <d-math>sin(y)</d-math>. But in our case,
-    <d-math>y=x^2</d-math> and <d-math>dy=2xdx</d-math>. Thus, by substitution,
-    <d-math>sin(x^2)=cos(x^2)2x</d-math>. This is called the chain rule and is
-    essential for computing derivatives. Simiarly, there exists a sum rule
-    (which as it turns out just involves adding together the derivatives) and a
-    product rule. By having a large set of known derivatives and using these
-    composition rules, it is possible to figure out the derivative for a huge
-    range of functions.
-  </p>
-  <p>
-    Extending this notion of a derivative to functions more than one input is
-    trival. We simply use our compostion rules and treat the other variables as
-    constant numbers that can vary. These derivatives are called
-    <i>partial derivatives</i> to indicate that they tell only part of the story
-    and get a new notation: <d-math>\frac{\partial f}{\partial x}</d-math>. The
-    <i>gradient vector</i> is simply the collection of partial derivatives and
-    is written as <d-math>\nabla f(x)</d-math>.
-  </p>
-  <h3>Linear Functions</h3>
-  <p>
-    You probably remember this famous equation:
-    <d-math>y=mx+b</d-math>. When you graph it, the result is a straight line.
-    This equation can be written in function form as <d-math>f(x)=mx+b</d-math>,
-    which is known as a "linear function" (well, sort of—keep reading). Can we
-    extend this notion of a linear functions beyond 2D?
-  </p>
-  <p>
-    When mathematicians extend a concept beyond its intuitive definition, they
-    typically seek to preserve its core defining properties. For lines, the key
-    property is a constant rate of change—they're straight. You might
-    instinctively reach for derivatives to codify this property, but there's a
-    simpler approach.
-  </p>
-  <p>
-    When <d-math>b=0</d-math>, a function like
-    <d-math>f(x)=mx</d-math> satisfies two important properties:
-  </p>
-  <ul>
-    <li>
-      <strong>Additivity:</strong> <d-math>f(x + y) = f(x) + f(y)</d-math>,
-      since <d-math>m(x + y) = mx + my</d-math>
-    </li>
-    <li>
-      <strong>Homogeneity:</strong> <d-math>f(kx) = kf(x)</d-math>, because
-      <d-math>m(kx) = k(mx)</d-math>
-    </li>
-  </ul>
-  <p>
-    These are the defining traits of what mathematicians call a linear function.
-    Since this definition is simple and convenient, mathematicians opted to
-    strip the title of linear function from functions where b is non-zero and
-    instead call such functions "affine".
-  </p>
-  <p>
-    Before considering functions in higher dimensions, we need a way to
-    represent inputs and outputs that have more than one number. This is where
-    the concept of a <i>vector</i> comes in. A vector is simply an ordered list
-    of values such as <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math>. We
-    define the addition of two vectors and the multiplication of a vector and a
-    number (often called a scalar in this context) as follows:
-  </p>
-  <div style="text-align: center; padding-bottom: 1em">
-    <span style="display: inline-block; margin-right: 2em">
-      <d-math>
-        \begin{bmatrix}a\\b\end{bmatrix} + \begin{bmatrix}c\\d\end{bmatrix} =
-        \begin{bmatrix}a+c\\b+d\end{bmatrix}
+        Now notice, if we have a linear function f:
+      </p>
+      <d-math style="text-align: center; padding-bottom: 1em"
+        >f(a_1e_1 + a_2e_2 + ... + a_ne_n) = a_1f(e_1) + a_2f(e_2) + ... +
+        a_nf(e_n)
       </d-math>
-    </span>
-    <span style="display: inline-block">
-      <d-math>
-        a\begin{bmatrix}x\\y\end{bmatrix} = \begin{bmatrix}ax\\ay\end{bmatrix}
+      <p>
+        This follows from addivitiy and homogeneity. Thus, every linear function
+        is completely defined by where it sends the basis vectors.
+      </p>
+
+      <p>
+        The previous result motivates the introduction of matricies. A matrix is
+        simply a convenient way to write out a linear function. The first
+        collumn of a matrix specifies where <d-math>e_1</d-math> is sent, the
+        second collumn of a matrix specifies where <d-math>e_2</d-math> is sent
+        and so on. For example, the following matrix:<d-math
+          >\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}</d-math
+        >
+        sends <d-math>e_1</d-math> to <d-math>(1, 3)</d-math> and
+        <d-math>e_2</d-math> to <d-math>(2, 4)</d-math>.
+      </p>
+      <p>
+        To apply the linear function given by a matrix to a vector, multiply
+        each column vector of the matrix by the corresponding component of the
+        input vector, then add the results together.
+      </p>
+      <p>For example, suppose we want to apply the matrix</p>
+      <d-math style="padding-bottom: 1em">
+        A = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
       </d-math>
-    </span>
-  </div>
-  <p>
-    The most important vectors are the <i>basis vectors</i>. In two dimensions,
-    these are the vectors <d-math>\begin{bmatrix}1\\0\end{bmatrix}</d-math> and
-    <d-math>\begin{bmatrix}0\\1\end{bmatrix}</d-math>. The basis vectors in
-    higher dimensions follow the same pattern: each one has a single 1 in one
-    position and 0s everywhere else. Where n denotes the dimension we're working
-    in, let's label these basis vectors as <d-math>e_1, e_2, ..., e_n</d-math>.
-    Notice that these basis vectors allow us to write every vector in the form
-    <d-math>a_1e_1 + a_2e_2 + ... + a_ne_n</d-math>. For instance,
-    <d-math>\begin{bmatrix}3\\2\end{bmatrix}</d-math> can be written as
-    <d-math>3e_1+2e_2.</d-math>
+      <p>to the vector</p>
+      <d-math style="padding-bottom: 1em">
+        \vec{v} = \begin{bmatrix} 5 \\ 6 \end{bmatrix}
+      </d-math>
+      <p>This is equivalent to computing:</p>
+      <d-math style="padding-bottom: 1em">
+        5 \begin{bmatrix}1 \\ 3\end{bmatrix} + 6 \begin{bmatrix}2 \\
+        4\end{bmatrix} = \begin{bmatrix}5 \\ 15\end{bmatrix} + \begin{bmatrix}12
+        \\ 24\end{bmatrix} = \begin{bmatrix}17 \\ 39\end{bmatrix}
+      </d-math>
+      <p>
+        This procedure is called matrix multiplication. We can write the
+        procedure of applying the matrix to the vector as follows:
+      </p>
+      <d-math style="padding-bottom: 1em">
+        \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 \\ 6
+        \end{bmatrix} = \begin{bmatrix} 17 \\ 19 \end{bmatrix}</d-math
+      >
+      <p>
+        Note that the matrix must always be on the left. This mirrors our
+        function notation <d-math>f(x)</d-math> where the input sits to the
+        right of the function.
+      </p>
+      <h3>How are ML models composed?</h3>
+      <p>
+        Before we dive into how these machines "learn", we must first
+        investigate their structure. The core idea of ML is to start with a
+        "scaffodling" function that has a number of parameters. What kind of
+        scaffolding function to choose? Expressive and easy to compute
+      </p>
 
-    Now notice, if we have a linear function f:
-  </p>
-  <d-math style="text-align: center; padding-bottom: 1em"
-    >f(a_1e_1 + a_2e_2 + ... + a_ne_n) = a_1f(e_1) + a_2f(e_2) + ... + a_nf(e_n)
-  </d-math>
-  <p>
-    This follows from addivitiy and homogeneity. Thus, every linear function is
-    completely defined by where it sends the basis vectors.
-  </p>
+      <h1>Setup</h1>
+      <p>
+        I aimed to keep the introduction assumption-free so that readers could
+        grasp the overall idea of the paper. However, the rest of the paper will
+        require some prior knowledge. Specifically, I'll assume you're familiar
+        with the fundamentals of machine learning and transformer models. If
+        these concepts are new, you can check at 3Blue1Brown's excellent
+        <a
+          href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
+          >video series</a
+        >
+        covering these topics. I'll do my best to introduce the interptability
+        methods as they come up, but it might be helpful to also refer to the
+        Distill Thread and perhaps also the Anthropic Thread. I think the most
+        fruitful papers to read are idk bout that actually
+      </p>
+      <p>
+        To start, we need to select a suitable model for our investigation.
+        Among open-source music generation models, Google's MusicLM and Meta's
+        MusicGen are both transformer-based and represent the current state of
+        the art. While their performance is broadly comparable, MusicGen holds a
+        slight edge in quality and therefore will serve as the object of our
+        study.
+      </p>
+      <p>
+        There are some key differences between the modalities of text and sound.
+        On computers, text is stored via the unicode standard which assigns a
+        number to each character.
+      </p>
+      -->
+      <h2>MusicGen</h2>
+    </d-article>
 
-  <p>
-    The previous result motivates the introduction of matricies. A matrix is
-    simply a convenient way to write out a linear function. The first collumn of
-    a matrix specifies where <d-math>e_1</d-math> is sent, the second collumn of
-    a matrix specifies where <d-math>e_2</d-math> is sent and so on. For
-    example, the following matrix:<d-math
-      >\begin{bmatrix}1 & 2\\3 & 4\end{bmatrix}</d-math
-    >
-    sends <d-math>e_1</d-math> to <d-math>(1, 3)</d-math> and
-    <d-math>e_2</d-math> to <d-math>(2, 4)</d-math>.
-  </p>
-  <p>
-    To apply the linear function given by a matrix to a vector, multiply each
-    column vector of the matrix by the corresponding component of the input
-    vector, then add the results together.
-  </p>
-  <p>For example, suppose we want to apply the matrix</p>
-  <d-math style="padding-bottom: 1em">
-    A = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
-  </d-math>
-  <p>to the vector</p>
-  <d-math style="padding-bottom: 1em">
-    \vec{v} = \begin{bmatrix} 5 \\ 6 \end{bmatrix}
-  </d-math>
-  <p>This is equivalent to computing:</p>
-  <d-math style="padding-bottom: 1em">
-    5 \begin{bmatrix}1 \\ 3\end{bmatrix} + 6 \begin{bmatrix}2 \\ 4\end{bmatrix}
-    = \begin{bmatrix}5 \\ 15\end{bmatrix} + \begin{bmatrix}12 \\ 24\end{bmatrix}
-    = \begin{bmatrix}17 \\ 39\end{bmatrix}
-  </d-math>
-  <p>
-    This procedure is called matrix multiplication. We can write the procedure
-    of applying the matrix to the vector as follows:
-  </p>
-  <d-math style="padding-bottom: 1em">
-    \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \begin{bmatrix} 5 \\ 6
-    \end{bmatrix} = \begin{bmatrix} 17 \\ 19 \end{bmatrix}</d-math
-  >
-  <p>
-    Note that the matrix must always be on the left. This mirrors our function
-    notation <d-math>f(x)</d-math> where the input sits to the right of the
-    function.
-  </p>
-  <h3>How are ML models composed?</h3>
-  <p>
-    Before we dive into how these machines "learn", we must first investigate
-    their structure. The core idea of ML is to start with a "scaffodling"
-    function that has a number of parameters. What kind of scaffolding function
-    to choose? Expressive and easy to compute
-  </p>
+    <d-appendix
+      ><h3>Specific Details</h3>
+      <p>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio
+        nostrum rerum dolorum necessitatibus aliquid aperiam suscipit illum
+        beatae nihil, consectetur unde accusamus, quasi, voluptatem at
+        aspernatur obcaecati eos laboriosam porro? Sapiente reiciendis optio
+        sequi repellendus minima! Provident labore excepturi maiores quisquam
+        autem temporibus iure sed, dignissimos non voluptas blanditiis veniam
+        laboriosam fugit incidunt quidem id eveniet delectus odio. Perferendis,
+        iusto! Totam consectetur iusto consequatur nesciunt adipisci
+        voluptatibus esse voluptatum molestias nobis. Harum maiores minima
+        assumenda, incidunt numquam earum alias voluptatibus consequuntur
+        dolorum dolor optio rem, repellendus fugit magni inventore ut! In
+        laboriosam necessitatibus omnis accusantium fugiat? Eligendi ea libero
+        beatae, doloremque eos esse sunt voluptas laudantium voluptates dolor
+        omnis reiciendis, enim, distinctio minima illo necessitatibus et sed
+        voluptatum labore eaque. Accusantium omnis delectus non tempore
+        molestiae quis totam aut explicabo hic quisquam vitae esse, repellendus
+        cum blanditiis? Velit, magnam quisquam laudantium autem sit delectus
+        possimus harum magni, veritatis commodi totam? Dolorem maxime
+        necessitatibus nostrum expedita, quas reiciendis similique ullam quo
+        assumenda illo architecto reprehenderit numquam sint vel obcaecati
+        adipisci, aspernatur libero. Ducimus corrupti distinctio error possimus
+        optio a. Id, laudantium. Nostrum saepe, alias libero architecto
+        consequatur ullam corporis. Tempora reprehenderit voluptatum cupiditate
+        ullam ab explicabo nostrum ut id sequi, tempore pariatur quis similique
+        enim voluptate quam alias ducimus, consequuntur libero. Accusamus dolore
+        voluptatem dolorem quo vero dolor eius, cumque culpa voluptates est
+        aspernatur officiis magni ea quibusdam doloremque totam ipsa fugiat
+        earum perspiciatis consectetur laudantium eos harum? Soluta, ad labore.
+        Harum eum illum quasi atque animi quidem a recusandae! Saepe eligendi
+        nisi vitae doloribus qui minus delectus deserunt aliquid hic totam,
+        natus maxime voluptatum suscipit corporis error facere ipsum.
+        Voluptatum? Ab incidunt ut voluptates omnis tenetur rem culpa provident?
+        Repudiandae corrupti velit animi cumque architecto minima expedita
+        aperiam nesciunt minus asperiores alias, ab fugit blanditiis repellat
+        inventore ut similique. Illum?
+      </p>
+    </d-appendix>
+    <d-bibliography src="bibliography.bib"></d-bibliography>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        fetch("house_data.json")
+          .then((response) => response.json())
+          .then((data) => {
+            const area = data.map((d) => d["Gr Liv Area"]);
+            const price = data.map((d) => d["SalePrice"]);
 
-  <h1>Setup</h1>
-  <p>
-    I aimed to keep the introduction assumption-free so that readers could grasp
-    the overall idea of the paper. However, the rest of the paper will require
-    some prior knowledge. Specifically, I'll assume you're familiar with the
-    fundamentals of machine learning and transformer models. If these concepts
-    are new, you can check at 3Blue1Brown's excellent
-    <a
-      href="https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
-      >video series</a
-    >
-    covering these topics. I'll do my best to introduce the interptability
-    methods as they come up, but it might be helpful to also refer to the
-    Distill Thread and perhaps also the Anthropic Thread. I think the most
-    fruitful papers to read are idk bout that actually
-  </p>
-  <p>
-    To start, we need to select a suitable model for our investigation. Among
-    open-source music generation models, Google's MusicLM and Meta's MusicGen
-    are both transformer-based and represent the current state of the art. While
-    their performance is broadly comparable, MusicGen holds a slight edge in
-    quality and therefore will serve as the object of our study.
-  </p>
-  <p>
-    There are some key differences between the modalities of text and sound. On
-    computers, text is stored via the unicode standard which assigns a number to
-    each character.
-  </p>
-  <h2>MusicGen</h2>
-</d-article>
+            const scatterOnly = {
+              x: area,
+              y: price,
+              mode: "markers",
+              name: "Actual Data",
+              type: "scatter",
+              marker: {
+                color: "#d65b28",
+                size: 8,
+                opacity: 0.7,
+                line: { width: 1, color: "#fff" },
+              },
+            };
 
-<d-appendix
-  ><h3>Specific Details</h3>
-  <p>
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio nostrum
-    rerum dolorum necessitatibus aliquid aperiam suscipit illum beatae nihil,
-    consectetur unde accusamus, quasi, voluptatem at aspernatur obcaecati eos
-    laboriosam porro? Sapiente reiciendis optio sequi repellendus minima!
-    Provident labore excepturi maiores quisquam autem temporibus iure sed,
-    dignissimos non voluptas blanditiis veniam laboriosam fugit incidunt quidem
-    id eveniet delectus odio. Perferendis, iusto! Totam consectetur iusto
-    consequatur nesciunt adipisci voluptatibus esse voluptatum molestias nobis.
-    Harum maiores minima assumenda, incidunt numquam earum alias voluptatibus
-    consequuntur dolorum dolor optio rem, repellendus fugit magni inventore ut!
-    In laboriosam necessitatibus omnis accusantium fugiat? Eligendi ea libero
-    beatae, doloremque eos esse sunt voluptas laudantium voluptates dolor omnis
-    reiciendis, enim, distinctio minima illo necessitatibus et sed voluptatum
-    labore eaque. Accusantium omnis delectus non tempore molestiae quis totam
-    aut explicabo hic quisquam vitae esse, repellendus cum blanditiis? Velit,
-    magnam quisquam laudantium autem sit delectus possimus harum magni,
-    veritatis commodi totam? Dolorem maxime necessitatibus nostrum expedita,
-    quas reiciendis similique ullam quo assumenda illo architecto reprehenderit
-    numquam sint vel obcaecati adipisci, aspernatur libero. Ducimus corrupti
-    distinctio error possimus optio a. Id, laudantium. Nostrum saepe, alias
-    libero architecto consequatur ullam corporis. Tempora reprehenderit
-    voluptatum cupiditate ullam ab explicabo nostrum ut id sequi, tempore
-    pariatur quis similique enim voluptate quam alias ducimus, consequuntur
-    libero. Accusamus dolore voluptatem dolorem quo vero dolor eius, cumque
-    culpa voluptates est aspernatur officiis magni ea quibusdam doloremque totam
-    ipsa fugiat earum perspiciatis consectetur laudantium eos harum? Soluta, ad
-    labore. Harum eum illum quasi atque animi quidem a recusandae! Saepe
-    eligendi nisi vitae doloribus qui minus delectus deserunt aliquid hic totam,
-    natus maxime voluptatum suscipit corporis error facere ipsum. Voluptatum? Ab
-    incidunt ut voluptates omnis tenetur rem culpa provident? Repudiandae
-    corrupti velit animi cumque architecto minima expedita aperiam nesciunt
-    minus asperiores alias, ab fugit blanditiis repellat inventore ut similique.
-    Illum?
-  </p>
-</d-appendix>
-<d-bibliography src="bibliography.bib"></d-bibliography>
+            const layout = {
+              xaxis: {
+                title: "Living Area (sq ft)",
+                gridcolor: "#e0e0e0",
+                zeroline: false,
+              },
+              yaxis: {
+                title: "Sale Price ($)",
+                gridcolor: "#e0e0e0",
+                zeroline: false,
+              },
+              plot_bgcolor: "#ffffff",
+              paper_bgcolor: "#ffffff",
+              margin: { t: 60, l: 70, r: 30, b: 70 },
+            };
 
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script>
-  window.addEventListener("DOMContentLoaded", function () {
-    fetch("house_data.json")
-      .then((response) => response.json())
-      .then((data) => {
-        const area = data.map((d) => d["Gr Liv Area"]);
-        const price = data.map((d) => d["SalePrice"]);
-
-        let m = 100;
-        let b = 0;
-
-        const getLine = (x) => x.map((val) => m * val + b);
-
-        const scatter = {
-          x: area,
-          y: price,
-          mode: "markers",
-          name: "Actual Data",
-          type: "scatter",
-          marker: {
-            color: "#007bff",
-            size: 8,
-            opacity: 0.6,
-            line: { width: 1, color: "#fff" },
-          },
-        };
-
-        const line = {
-          x: area,
-          y: getLine(area),
-          mode: "lines",
-          name: "Prediction Line",
-          type: "scatter",
-          line: {
-            color: "#e83e8c",
-            width: 4,
-            dash: "solid",
-          },
-        };
-
-        const layout = {
-          xaxis: {
-            title: "Living Area (sq ft)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          yaxis: {
-            title: "Sale Price ($)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-          margin: { t: 60, l: 70, r: 30, b: 70 },
-        };
-
-        Plotly.newPlot("plot", [scatter, line], layout, {
-          responsive: true,
-          displayModeBar: false,
-          displaylogo: false,
-        });
-
-        const update = () => {
-          m = +document.getElementById("slope").value;
-          b = +document.getElementById("intercept").value;
-          document.getElementById("slopeVal").textContent = m;
-          document.getElementById("interceptVal").textContent = b;
-          Plotly.restyle("plot", { y: [getLine(area)] }, [1]);
-        };
-
-        document.getElementById("slope").addEventListener("input", update);
-        document.getElementById("intercept").addEventListener("input", update);
+            Plotly.newPlot("raw-data-plot", [scatterOnly], layout, {
+              responsive: true,
+              displayModeBar: false,
+              displaylogo: false,
+            });
+          });
       });
-  });
-</script>
+    </script>
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        fetch("house_data.json")
+          .then((response) => response.json())
+          .then((data) => {
+            const area = data.map((d) => d["Gr Liv Area"]);
+            const price = data.map((d) => d["SalePrice"]);
 
-<script>
-  window.addEventListener("DOMContentLoaded", function () {
-    fetch("house_data.json")
-      .then((response) => response.json())
-      .then((data) => {
-        const area = data.map((d) => d["Gr Liv Area"]);
-        const price = data.map((d) => d["SalePrice"]);
+            let m = +document.getElementById("mSlider").value;
+            let b = +document.getElementById("bSlider").value;
 
-        const scatterOnly = {
-          x: area,
-          y: price,
-          mode: "markers",
-          name: "Actual Data",
-          type: "scatter",
-          marker: {
-            color: "#17a2b8",
-            size: 8,
-            opacity: 0.7,
-            line: { width: 1, color: "#fff" },
-          },
-        };
+            document.getElementById("mValue").textContent = m;
 
-        const layout = {
-          title: {
-            text: "Actual House Price vs Living Area",
-            font: { size: 22 },
-          },
-          xaxis: {
-            title: "Living Area (sq ft)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          yaxis: {
-            title: "Sale Price ($)",
-            gridcolor: "#e0e0e0",
-            zeroline: false,
-          },
-          plot_bgcolor: "#ffffff",
-          paper_bgcolor: "#ffffff",
-          margin: { t: 60, l: 70, r: 30, b: 70 },
-        };
+            if (b >= 1000) {
+              document.getElementById("bValue").textContent =
+                (b / 1000).toFixed(0) + "k";
+            } else {
+              document.getElementById("bValue").textContent = b;
+            }
 
-        Plotly.newPlot("raw-data-plot", [scatterOnly], layout, {
-          responsive: true,
-          displayModeBar: false,
-          displaylogo: false,
-        });
+            const getLine = (x) => x.map((val) => m * val + b);
+
+            const scatter = {
+              x: area,
+              y: price,
+              mode: "markers",
+              name: "Actual Data",
+              type: "scatter",
+              marker: {
+                color: "#d65b28",
+                size: 8,
+                opacity: 0.6,
+                line: { width: 1, color: "#fff" },
+              },
+            };
+
+            const line = {
+              x: area,
+              y: getLine(area),
+              mode: "lines",
+              name: "Prediction Line",
+              type: "scatter",
+              line: {
+                color: "#000000",
+                width: 4,
+                dash: "solid",
+              },
+            };
+
+            const layout = {
+              xaxis: {
+                title: "Living Area (sq ft)",
+                gridcolor: "#e0e0e0",
+                zeroline: false,
+              },
+              yaxis: {
+                title: "Sale Price ($)",
+                gridcolor: "#e0e0e0",
+                zeroline: false,
+              },
+              plot_bgcolor: "#ffffff",
+              paper_bgcolor: "#ffffff",
+              margin: { t: 60, l: 70, r: 30, b: 70 },
+            };
+
+            Plotly.newPlot("plot", [scatter, line], layout, {
+              responsive: true,
+              displayModeBar: false,
+              displaylogo: false,
+            });
+
+            const update = () => {
+              m = +document.getElementById("mSlider").value;
+              b = +document.getElementById("bSlider").value;
+              document.getElementById("mValue").textContent = m;
+              if (b >= 1000) {
+                document.getElementById("bValue").textContent =
+                  (b / 1000).toFixed(0) + "k";
+              } else {
+                document.getElementById("bValue").textContent = b;
+              }
+              Plotly.restyle("plot", { y: [getLine(area)] }, [1]);
+            };
+
+            document
+              .getElementById("mSlider")
+              .addEventListener("input", update);
+            document
+              .getElementById("bSlider")
+              .addEventListener("input", update);
+          });
       });
-  });
-</script>
+    </script>
+  </body>
+</html>
