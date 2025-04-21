@@ -28,12 +28,13 @@
 <d-byline></d-byline>
 <d-article>
   <d-toc></d-toc>
+  <h2 style="display: none">Introduction</h2>
   <p>
     Modern AI systems such as Stable Diffusion and ChatGPT demonstrate
     remarkable and often surprising capabilities. Yet, their inner workings
     remain largely opaque. These systems are often described as "black boxes" as
-    we can easily observe their inputs and outputs, but their inner workings are
-    hidden and mysterious. This opacity raises a number of concerns.
+    we can see what goes in and what comes out, but do not understand what
+    happens inside. This opacity raises a number of concerns.
   </p>
   <p>
     First, there's the issue of fairness. Toady, AI systems are used to filter
@@ -52,29 +53,33 @@
   </p>
   <p>
     A third concern is security. One of the most pressing threats to today's
-    models is the risk of <i>jailbreaks</i>. Returning to the job application
+    systems is the risk of <i>jailbreaks</i>. Returning to the job application
     example: what if a candidate subtly crafted their resume to mannipulate the
     AI evaluator into giving them an unjustifiably high score? By better
-    understanding the internal mechanisms of these models, we can develop tools
-    and techniques to detect, prevent, and mitigate such attacks more
-    effectively.
+    understanding the internal mechanisms of these systems, we can develop tools
+    to mitigate such attacks.
   </p>
   <p>
-    In short, the ___ of these models makes in harder to trust their decisions
-    Beyond these more practical concerns, there's also an element of scientific
-    cursiotiy. The field of interpretability has emerged in response, aiming to
-    demystify these systems and provide insight into their internal mechanisms.
-    But how did this come to be? How did researchers create programs that they
-    themsleves don't understand? To answer that, it's useful to go through the
-    historical development of AI.
+    In short, the nontransparency of these systems makes it harder to trust
+    their decisions. In response, the field of <i>interpretability</i> has
+    emerged, aiming to demystify these systems and provide insight into their
+    internal mechanisms.
   </p>
   <p>
-    Despite its recent flood of attention, AI was largely dismissed as an
-    unserious field for much of its existence. Since the advent of computers in
-    the 1950s, ambitious programmers promsied we were on the cusp of building
-    systems smarter than us. The loose term "AI" emerged to encompass programs
-    that mimic human intelligence. But time and time again, those promises fell
-    flat.
+    If you're unfamiliar with how AI systems are created, this opaqueness may
+    seem odd; after all, humans built these systems. Shouldn't we understand how
+    they work? Unfortunatley, not. You may have heard the word "learning" tossed
+    around in discussions of AI. Unlike traditional programs such as your web
+    browser which are coded by hand, AI systems are trained through exposure to
+    vast numbers of examples. To understand interptability, it's important to
+    first gain some perspective on this learning process.
+  </p>
+  <h3>A little history</h3>
+  <p>
+    Despite its recent flood of attention, AI was dismissed as an unserious
+    field for much of its existence. Since the advent of computers in the 1950s,
+    ambitious programmers promsied we were on the cusp of building systems
+    smarter than us. But time and time again, those promises fell flat.
   </p>
   <p>
     The core challenge of AI is the rigidity of computers. Computer chips
@@ -96,54 +101,34 @@
     human thought?
   </p>
   <p>
-    So while computers excelled within controlled domains, the goal of some sort
-    of general intelligence felt like a pipe-dream. Machine triumphed over man
-    in backgammom and chess, but man was content to have painting, poetry, and
-    music safetly out of reach. As such, the field of AI lay dormant in the
-    following decades. It drifted from the public imagination and grew
-    increasingly disconnected from mainstream computer science.
+    You can probably see where this story is going. Obviously, some form of
+    learning is the answer right? Well—not so much. At the time, scientists had
+    no real understanding of how learning worked in the brain,<d-footnote
+      >Which we still don't</d-footnote
+    >let alone how to replicate it in a machine. The whole idea seemed
+    hopeless—like science fiction. Even with all the challenges of writing
+    programs by hand, they at least offered a clear path forward. You could
+    follow the logic, fix mistakes, and know exactly what the system was
+    doing—none of which was true for learning methods.
   </p>
   <p>
-    Still, some engineers envisioned machine intelligence radically differently.
-    They pictured programs that could learn from examples instead of rely on
-    human instruction. In 1957, Frank Rosenblatt unveiled the
-    <i>perceptron</i> (today commonly referred to as an artificial neuron, or
-    just simply a neuron), a simple model very rougly analogous to neurons in
-    the brain. The system took in binary inputs, each linked to the output
-    through a corresponding "synapse" (often called a <i>weight</i>), which
-    determined how strongly that input influenced the final binary
-    decision.<d-footnote
-      >If you're familiar with Linear Algebra, you may have noticed that
-      Rossenblatt's artifical neurons are identicial to a linear function
-      combined with a decision threshold. At the time, this approach was more
-      novel than it seems now as LA wasn't nearly as ubiquitous as it is
-      today.</d-footnote
-    >
-    Rosenblatt demonstrated how his machine could differntiate basic shapes on a
-    grid, such as "T"s from "J"s, given the right weights. Additionally,
-    Rosenblatt proposed a simple learning rule that allowed his model to "learn"
-    its weights on its own through a handful of examples.
+    Early attempts didn't inspire confidence either. In 1957, Frank Rosenblatt
+    unveiled the <i>perceptron</i>, a simple model very rougly analogus to
+    neurons in the brain. The system took in binary inputs, each linked to the
+    output through a corresponding "synapse" (often called a <i>weight</i>),
+    which determined how strongly that input influenced the final binary
+    decision. Rosenblatt demonstrated how his machine could differntiate basic
+    shapes on a grid, such as "T"s from "J"s, given the right weights.
+    Additionally, Rosenblatt proposed a simple learning rule that allowed his
+    model to "learn" its weights on its own through a handful of examples.
   </p>
   <p>
-    Rosenblatt's rule worked as follows: For each input example, the system
-    updates the weights depending on the type of example—if it's a positive
-    example (a behavior you want), the corresponding weights are slightly
-    increased; if it's a negative example (a behavior you don't want), the
-    weights are slightly decreased. Over time, these small corrections would
-    accumulate, gradually pushing the model toward the correct behavior. This
-    paridigm of the computer "learning" by itself spawned the term
-    <i>Machine Learning</i> (ML). In the frenzy of post-WWII tech optimism, the
-    discovery generated a lot of excitement.
+    Rossenblatt's work generated a lot of excitement.
     <i>The New York Times</i> proclaimed that Rosenblatt's perceptron would be
     able to "walk, talk, see, write, reproduce itself, and be conscious of its
-    existence".
-  </p>
-  <p>
-    In hindsight, Rosenblatt's approach seems like the obvious way forward.
-    After all, isn't some kind of learning how the brain works? However,
-    Rosenblatt's methods had major limitations. His simple perceptron model
-    could only learn the most trivial tasks. For anything more complicated, his
-    rule would end up in an endless loop.<d-footnote
+    existence". Yet the system had crippling limitations. His simple perceptron
+    model could only learn the most trivial tasks. For anything more
+    complicated, his rule would end up in an endless loop.<d-footnote
       >More specifically, Rosenblatt's perceptron could only learn
       linearly-separable patterns, meaning the space of inputs could be divided
       into classes using a straight line. A classic example of a problem it
@@ -154,41 +139,24 @@
         bibtex-key="minsky1969perceptrons"
       ></d-cite>
     </d-footnote>
-    To counter this, Rosenblatt proposed networks composed of multiple
-    perceptrons. While these networks of neurons (called neural networks) , but
-    he was unable to find a more general learning rule. Additionally, at the
-    time, scientists had no real understanding of how learning worked in the
-    brain,<d-footnote>Which we still don't</d-footnote>let alone how to
-    replicate it in a machine. Even with all the challenges of writing programs
-    by hand, they at least offered a clear path forward. You could follow the
-    logic, fix mistakes, and know exactly what the system was doing—none of
-    which was true for learning methods. The idea was bold, but the technology
-    was crude, and interest soon fizzled out.
+    Clearly, the system needed to be much more complicated to have any utility.
+    As such, Rossenblatt tried composing networks of his perceptrons, but failed
+    to find a corresponding "learning rule".
   </p>
   <p>
-    Still, a small group of dedicated researchers pushed Rosenblatt's work
-    forward. The first real progress toward a more general learning rule came in
-    1960, when Bernard Widrow and Marcian Hoff introduced a new approach.
-    Instead of Rosenblatt's simple update rule, they used calculus to derive a
-    more precise method for training a single perceptron—what become known as
-    the <i>Least Mean Squares</i> (LMS) algorithm.<d-footnote
-      >Explain</d-footnote
-    >
-    This method closely resembles modern techniques, but it stopped short of
-    providing a general learning rule. That breakthrough wouldn't come until
-    1986, with the introduction of <i>backpropegation</i>.
-    <d-footnote>kind of</d-footnote>
+    As such, the field of AI entered a long period of stagnation. The initial
+    excitement around learning systems faded, and interest shifted back to
+    rule-based approaches. In 1960, the field came tantalizingly close to a
+    breakthrough. Bernard Widrow and Marcian Hoff introduced the Least Mean
+    Squares (LMS) algorithm which was remarkably close to the modern method. But
+    the pair stopped just short of applying their method for networks of
+    perceptrons.
   </p>
   <p>
-    Backpropagation is very similar to the LMS algorithm. A key insight made in
-    the time between LMS and Backpropagation was to allow perceptrons to take on
-    a continuous range of values rather than just being "on" or "off". This
-    allows the effect of earlier perceptrons on later neurons to be quantified
-    using calculus. Additionally, the method's namesake forward-backward
-    approach reuses intermediate results from the forward pass to efficiently
-    compute weight updates during the backward pass. Still, many researchers
-    were skeptical. It was widely believed that the method simply didn't work in
-    practice.
+    The field of AI would have to wait until 1986 for this long-sought general
+    learning rule. The method, called <i>backpropagation</i>, finally made it
+    possible to train networks of perceptrons. Still, researchers were
+    skeptical. It was thought that the method simply didn't work in practice.
   </p>
   <p>
     However, the success of ML in the 1990s would show that backpropagation
@@ -258,7 +226,7 @@
     understudied. The goal of this paper is to apply these established
     interptability techniques to this new domain.
   </p>
-  <h1>A Brief Introduction to ML</h1>
+  <h2>A Brief Introduction to ML</h2>
   <p>
     As I wanted to make this project as self-contained as possible, I decided to
     include an introduction to ML. If you're already familiar with the basics of
@@ -486,6 +454,7 @@
     computers, text is stored via the unicode standard which assigns a number to
     each character.
   </p>
+  <h2>MusicGen</h2>
 </d-article>
 
 <d-appendix

@@ -22,28 +22,4 @@ systems vs models
 
 mention neuron terminology for perceptron
 
-perceptron training single vs networks specified - be more specific about bigger networks, rossenblatt experimented with creating networks, but no training rule
-
-what is the thread
-
-structure:
-
-complexitity born out of simplicity - evolution analogy
-
-transformer-based
-
-multi-positional linear probe
-
-
-linear-probing and steering
-note-representations
-rhythm
-
-polysemanticity
-
-
-Introduction
-Intro to ML
-MusicGen
-linear-probing and steering - note representations - need a hypothesis
-mechanistic approach with SAEs and maybe circuits3
+shove the definition of AI in there

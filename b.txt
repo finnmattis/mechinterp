@@ -1,6 +1,0 @@
-what/why interptability? (fairness, reliability, security)
-
-lead to trust
-
-
-If a Chatbot gives misleading information, not the end of the world, but AI running critical infrastructure would be catastrophic.
