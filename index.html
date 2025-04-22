@@ -1300,8 +1300,7 @@
         metrics, human evaluators were asked to rate the quality and adherence
         to the prompt of the generated music on a scale of 1-100.
       </p>
-      <!-- Need these divs around this img for some reason to prevent tons of whitespace on the bottom-->
-      <div><img src="media/musiceval.png" width="100%" /></div>
+      <img src="media/musiceval.png" width="100%" />
       <p>
         Due to its strength and also simplicity compared to its contemporaries
         such as MusicLM, MusicGen will serve as the object of our study.
@@ -1315,6 +1314,7 @@
         captured by recording the amplitude of the waveform thousands of times
         per second, a process known as sampling.
       </p>
+      <h4>Encodec</h4>
       <p>
         One way we could train a music-based transformer would be to quantize
         these samples. Here, quantizing simply means snapping continuous values
@@ -1327,20 +1327,36 @@
       <p>
         This time, our compression method will not be algorithm but rather
         another model namely Meta's own audio codec EnCodec. Encodec is a
-        convolutional neural network that transforms each second of audio into
-        50 embedding vectors, each 128 dimensions wide. In order to compress
-        these embedding vectors further the model also uses a method called
-        residual vector quantization (RVQ).
+        convolutional neural network that transforms each second of 32kHz audio
+        into 50 embedding vectors, each 128 dimensions wide. In order to
+        compress these embedding vectors further the model also uses a method
+        called
+        <i>residual vector quantization</i> (RVQ).
       </p>
       <p>
-        "curse of dimensionality"
-        
-        
-        RVQ extends traditional quantization, by repeating the process several
-        times. First, the vector is snapped to a grid. Then, you take note of
-        the residual, the difference between vector and its snapped position,
-        and quantize that vector. Repeating this process several times gives
-        you... mention codbeook
+        The reason why RVQ is so much more efficient than traditional vector
+        quantization is the dreaded curse of dimensionallity. If we want to
+        quantize a 2D vector with 10 values for each component, we only need
+        $10^2$ points. However, to quantize our 128 dimensional vector, we'd
+        need $10^{128}$ points which again is more than $10^{80}$ atoms in the
+        observable universe. RVQ combats this issue by applying the vector
+        quantization multiple times.
+      </p>
+      <p>
+        To start, we quantize our vector normally by snapping it to a grid of
+        values. We take note of the residual vector, the difference between the
+        vector and its snapped position. We then quantize this vector. We can
+        repeat this process over and over to gain increasingly fine detail. This
+        staves off the curse of dimensionality as RVQ essentially places a new
+        grid at every chosen point, allowing for exponentially smaller
+        codebooks.
+      </p>
+      <p>
+        Encodec uses 4 steps of RVQ to trim its 128-dimensional vectors into 4
+        codebook entries. Thus, each second of continuous 32kHz audio is
+        represented as $50*4=200$ discrete numbers. That's a compression rate of
+        160x! See the difference between some uncompressed and compressed songs
+        below.
       </p>
       <div class="player-container">
         <div class="album-flipper">
@@ -1462,9 +1478,44 @@
 
         <audio id="audio-player"></audio>
       </div>
-      <p>Delay pattern</p>
+      <p>
+        Encodec fairs decently for sonically simpler songs such as "Blinding
+        Lights" or "The Great Gig in the Sky" but really breaks down for more
+        information-dense songs such as Scriabin's franetic 4th Sonata and
+        espically Kendrick's jazz-infused "United 05".
+      </p>
+      <h4>Codebook Interleaving Patterns</h4>
+      <p>
+        Now, we have a suitably short input to process with a transformer. But
+        our input stream has four seperate channels. How should can we input
+        these streams into our transformer and what should our model predict at
+        each timestep?
+      </p>
+      <p>
+        A natural way we can input each quantized encodec vector into our
+        transformer would be to maintain 4 seperate embedding tables. At each
+        position, we could simply sum the contributions from each embedding
+        table together and ...
+      </p>
+      <img src="media/interleaving.png" width="100%" />
+      <p>
+        Through experiment, the delay pattern performed the best and is thus,
+        what was used to train the final model.
+      </p>
       <h2>Probing and Steering Vectors</h2>
-      <p>Alright, now we're ready to</p>
+      <p>
+        Alright, now we're finally ready doing some interptability. The earliest
+        interpertability results came from playing around in embedding spaces. A
+        landmark moment was the release of word2vec.
+      </p>
+      <p>Linear Representation Hypothesis, Linear Probes and OthelloGPT</p>
+      <p>Steering Vectors - different methodolgies</p>
+      <h2>Microscopes and SAEs</h2>
+      <p>Now we're in uncharted territory.</p>
+      <h2>Circuit Tracing</h2>
+      <p>
+        Now we're at the holy grail of mechanistic interptability or smth idk
+      </p>
     </d-article>
 
     <d-appendix

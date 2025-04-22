@@ -14,3 +14,9 @@ a brief note on training
 attnetion dimension
 
 key/querry embedding space
+
+quantization not necessarily grid and codebook terminology
+
+mention cascading of musicLM also musicLM NOT open source
+
+Why RVQ - why not feed in Encodec vector
