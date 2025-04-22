@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="icon" href="favicon.png" type="image/png" />
     <meta charset="utf-8" />
     <script src="template.v2.js"></script>
     <title>Music Interpretability</title>
@@ -12,6 +13,66 @@
         font-family: sans-serif;
         padding: 40px;
       }
+      iframe {
+        border: none;
+        height: 1100px;
+      }
+
+      .canvas-container {
+        position: relative;
+      }
+
+      canvas {
+        display: block;
+      }
+
+      .tooltip {
+        position: fixed;
+        background-color: rgba(33, 33, 33, 0.95);
+        color: white;
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: "Inter", sans-serif;
+        pointer-events: none;
+        z-index: 1000;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transition: opacity 0.15s ease;
+        min-width: 180px;
+        letter-spacing: 0;
+        line-height: 1.4;
+      }
+
+      .tooltip.visible {
+        opacity: 1;
+      }
+
+      .tooltip-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+
+      .tooltip-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .tooltip-label {
+        color: #cccccc;
+        font-weight: 500;
+        margin-right: 12px;
+      }
+
+      .tooltip-value {
+        font-weight: 500;
+      }
+
+      .tooltip-value.highlight {
+        color: #ff9d5c;
+        font-weight: 600;
+      }
+
       .slider-container {
         width: 300px;
         max-width: 300px;
@@ -720,11 +781,12 @@
       <p>
         Motivated by a desire to make each step as simple as possible, we
         naturally turn to linear functions. In higher dimensions, linear
-        functions are direct generalizations of the familiar equation $y = mx$.
-        For instance, consider a linear function that maps 3-dimensional input
-        vectors to 2-dimensional output vectors. This transformation can be
-        written in a form that closely resembles $y = mx$ or alternatively,
-        using the more compact matrix notation:
+        functions are direct generalizations of the familiar equation $y = mx +
+        b$.<d-footnote>affine functions note</d-footnote> For instance, consider
+        a linear function that maps 3-dimensional input vectors to 2-dimensional
+        output vectors. This transformation can be written in a form that
+        closely resembles $y = mx$ or alternatively, using the more compact
+        matrix notation:
       </p>
       <div
         style="
@@ -735,13 +797,12 @@
         "
       >
         <div>
-          $\begin{aligned} f(\mathbf{x})_1 &= a_{1}x + a_{2}y + a_{3}z \\
-          f(\mathbf{x})_2 &= b_{1}x + b_{2}y + b_{3}z \end{aligned}$
+          $f(x, y, z) = \begin{bmatrix} a_1x + a_2y + a_3z \\ b_1x + b_2y + b_3z
+          \end{bmatrix}$
         </div>
         <div style="font-size: 4em">=</div>
         <div>
-          $\begin{bmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{bmatrix}
-          \begin{bmatrix} x \\ y \\ z \end{bmatrix}$
+          $\begin{bmatrix} a_1 & a_2 & a_3 \\ b_1 & b_2 & b_3 \end{bmatrix} $
         </div>
       </div>
       <p>We can also include a shifting term as follows:</p>
@@ -754,8 +815,8 @@
         "
       >
         <div>
-          $\begin{aligned} f(\mathbf{x})_1 &= a_{1}x + a_{2}y + a_{3}z + a_4 \\
-          f(\mathbf{x})_2 &= b_{1}x + b_{2}y + b_{3}z + b_4 \end{aligned}$
+          $f(x, y, z) = \begin{bmatrix} a_1x + a_2y + a_3z + a_4 \\ b_1x + b_2y
+          + b_3z + b_4 \end{bmatrix}$
         </div>
         <div style="font-size: 4em">=</div>
         <div>
@@ -839,7 +900,7 @@
         "model neurons". They don't. Biological neurons are far more complex
         than a linear function. Instead, linear functions arise due to their
         simplicity and the instatiable need for depth. The success of machine
-        learning is not tied to the power of our brains but rather it's own
+        learning is not through mimckery of biology but rather it's own
         mathematical miracle.
       </p>
       <p>
@@ -849,48 +910,231 @@
       </p>
       <h3 id="chatbot">Chatbot</h3>
       <p>
-        Now for the final challenge: chatbots. The medium of text introduces
-        challenges we didn't face with digit recognition—most notably,
-        variable-length input and complex dependencies across time. To address
-        these issues, we'll need a new architectural approach: transformers. To
-        explain how these models work, let's walk through the life of a question
-        typed into ChatGPT.
+        Now for the final challenge: chatbots. The key new challenge we'll face
+        in this section is grappling with generation. Our previous methods we
+        used are unfit for generative tasks as their outputs are not
+        self-coherrent (you'll see what this looks like shortly). In response,
+        we'll introduce the process of Autoregression and sequential models.
+        Specifically, we'll focus on the golden child of modern ML: the
+        transformer. Once we've dealt with these theoretical considerations,
+        we'll see how these ideas come together to create a chatbot.
+      </p>
+      <h4>Autoregression</h4>
+      <p>
+        Before considering language models, let's first consider a simpler
+        generative scenario: generating mnist numbers. For this example, let's
+        say we have no access to the labels attached to each image. So how can
+        we create a model that pumps out plausible looking numbers? The naïve
+        approach would be to take train a model that takes in a dummy image
+        (such as a completely blank one) and train it to map this blank image to
+        one of our numbers. Let's see the results.
+      </p>
+      <div style="display: flex; justify-content: center">
+        <img src="smearing.png" width="50%" />
+      </div>
+      <p>
+        Alright, that's not great. So what happened here? Each picture looks
+        like a frankenstein amalgamation of all the numbers. In trying to please
+        these different training examples, our models ends up just producing
+        blobs. So how can we combat this kind of "generative smearing"?
       </p>
       <p>
-        When you're question reaches OpenAI, it's encoded as a string of 1s and
-        0s. The first step in the process in tokenizing this string through a
-        process called Byte Pair Encoding (BPE). The specifics of this are not
-        important but this algorithm breaks the prompt into little chunks called
-        tokens. These tokens operate at the word or sub-word level. This step is
-        crucial as transformers are very sensitive to the size of their input.
+        Well, we need some way to maintain continuity. The most natural way to
+        to ensure the model's generation makes some sense is to have the model
+        generate one pixel at a time. This way, them model can react to its
+        previous choices. For example, say the model starts by drawing a
+        horizontal line at the top of the image, it then knows to continue
+        drawing a 7. This method of sequential generation is called
+        <i>autoregression</i> as the model's outputs are appended to its inputs.
       </p>
       <p>
-        Next, we swap these tokens for their respective embedding vectors via a
-        table. The embedding space forms the heart of the transformer. The idea
-        is that these embedding vectors somehow encode the semantic meanings of
-        their words. For example, we might expect happy and jolly or sad and
-        gloomy to be grouped close together in this embedding space. All the
-        computation of the transformer will serve to refine these embedding
-        vectors and imbue them with more meaning and context.
+        In order to create an autoregressive model, we need an architure that
+        can take in input data of variable size. Perhaps the most elegant option
+        are Recurrent Neural Netorks. These networks maintain some kind of
+        memory to remember the previous inputs. The simplest RNNs simply
+        maintain a single vector state. Here's a diagram of one of these vanilla
+        RNNs:
+      </p>
+      <div style="display: flex; justify-content: center">
+        <img src="rnn.png" />
+      </div>
+      <p>
+        More complicated architectures such as Long-Short Term Memory (LSTM) or
+        Gated Recurrent Unit (GRU) models include a more complicated memory
+        management system. As these variants are no longer state of the art,
+        we'll skip over the details but if you're interested, I recomend you
+        check out Chris Olah's excellent blog post. Let's see how these models
+        perform on our digit generation task:
+      </p>
+      <div style="display: flex; justify-content: center">
+        <img src="lstm.png" width="50%" />
+      </div>
+      <p>
+        Much better. But still not great. In general RNNs have one fatal
+        problem: forgetting things. They are only equipped with a finite memory
+        capacity—vectors of a certain size. As such, they often struggle with
+        longer-term coherrency. When genreating language, reccurrent models may
+        be able to create a cohherrent sentence, but fail to generate a story
+        with a clear narrative thread.
       </p>
       <p>
-        Just as vanilla neural networks were comprimsed of an alternating
-        sequence of linearities followed by non-linearities, transformers
-        sandwitch attention blocks and Multi-Layer Perceptrons (MLP) blocks. The
-        job of attention blocks is to pass information between the different
-        tokens. For example, perhaps the token embedding vector for fox would be
-        modified by its respective adjectives proceeding it quick and brown. The
-        MLP blocks are the familiar neural networks we dealt with in the last
-        section. Their job is to store information like Lebron James plays
-        basketball and perhaps perform some kind of reasoning - more opaque. A
-        useful mnemonic for rembering this is: communication followed by
-        computation. 4x
+        Enter transformers. A loose analogy between RNNS and transformers is
+        that while RNNs try to keep everything in their heads, transformers much
+        more rationally choose to peek back at previous parts of the input.
+        While this requires more computation, the results are far better.
       </p>
-      <p>Residual Steram and LNs</p>
-      <p>Attention</p>
-      <p>Sampling</p>
-      <p>pre-training</p>
-      <p>Other variants of transformers: cross-attention</p>
+      <h4>Transformers</h4>
+      <p>
+        To gain an understanding of the different components in transformers,
+        let's trace the life of a question entered into a chatbot.
+      </p>
+      <p>
+        Before going into the individual steps, let's go through the inputs and
+        outputs of a transformer. As you could have guessed from the last
+        section, transformers are autoregressive meaning they generate one word
+        at a time. Beyond being autoressive, transformers also predict the next
+        token at each position. This means when you input "The quick brown fox"
+        into a transformer, the model not only predicts that jump follows fox,
+        but also that fox follows brown and brown follows quick. This
+        parelization is another reason why transformers outperform RNNs so
+        drastically (GPUs).
+      </p>
+      <p>
+        The first step in processing a question is to break it into small chunks
+        called tokens. These tokens are typically at the word or subword level.
+        Here is a cool demo courtesy of <a href="https://duong.dev/">dqbd</a>.
+        Try playing around and typing some text in. Can you find any weird
+        behaviors?
+      </p>
+      <iframe src="https://tiktokenizer.vercel.app/?model=cl100k_base"></iframe>
+      <p>
+        You may have noticed some behaviors regarding whitespace. For example,
+        "hello" is token 15,339 while " hello" is token 24,748. Tokenization is
+        responsible for some funny language model difficulties such as addition
+        (look at how arbitrarily numbers are broken up) or answering how many
+        letters in a word. Still, tokenization is essential to modern language
+        models recipe. As we'll see later, transformers are very computationally
+        sensative to the length of their input.<d-footnote
+          >If you're familiar with big-O, transformers have a quadratic
+          time-complexity: $O(n^2)$.
+        </d-footnote>
+      </p>
+      <p>
+        The specific algorihtm used to decide the breakpoints is called
+        <i>Byte Pair Encoding</i> (BPE). While the details aren't crucial, the
+        core idea is simple: the token boundaries are found by repeatedly merges
+        the most frequent pair of characters (or more precisely, bytes) in the
+        text.
+      </p>
+      <p>
+        The next step is to use a massive lookup-table to swap our tokens for
+        their respective vectors. These vectors are called
+        <i>embedding vectors</i> and together, these vectors form what's known
+        as the <i>embedding space</i>. This space is designed to encode the
+        semantic meaning of each token. As such, we expect similar words like
+        "happy" and "jolly" to cluster close together. This embedding space
+        forms the heart of the transformer. All of the computation our model
+        will do serves to refine these embedding space representations with
+        learned knowledge, reasoning, and context.
+      </p>
+      <p>
+        Our transformer's computation is split into blocks. Each block is made
+        of two types of sublocks: attention blocks and multi-layer perceptron
+        (MLP) blocks. The purpose of the attention blocks are to pass around
+        information. This mechanism is the key innovation of the transformer.
+        MLP blocks are designed to store knowledge and facilitate reasoning.
+        These are are nothing new. They are the same neural networks that we
+        dealt with in the last section. A useful mnemonic to remember this
+        general structure is "communication followed by computation" as phrased
+        by Andrej Kaparthy.
+      </p>
+      <p>
+        Unlike the models we saw in the last section, the outputs of one
+        transformer layer are not fed directly into the next. In the last
+        section, I espoused the incredible power of depth in neural networks.
+        Still, researchers eventually hit a wall when scaling the depth of these
+        networks. The problem was that earlier parameters simply didn't
+        contribute much to the final output and thus had a faint gradient.
+      </p>
+      <p>
+        To solve this, modern architectures have the different layers of the
+        model read and write to a shared communication channel called the
+        <i>residual stream</i>. This gives gradients a superhighway that allows
+        them to flow to the early parameters just as easily as the later layers,
+        democratizing access to the training signal.
+      </p>
+      <p>
+        The final piece of this broad overview are <i>layernorms</i>. When
+        either attention or MLP blocks read from the residual stream, they
+        normalize the mean variance. This simply prevents numerical instability
+        and makes training more reliable. Here's a complete picture of the
+        transformer.
+      </p>
+      <img src="transformer.png" width="40%" />
+      <h5>Attention</h5>
+      <p>
+        Now let's dive into the attention mechanism. As stated earlier, the goal
+        of attention is to move information around. For example, say the model
+        is parsing the phrase "The fluffy, brown dog". We want dog's embedding
+        vector to injected with the context of the proceeding adjectives.
+      </p>
+      <p>
+        To do this, we are going to create 3 new vectors for every embedding
+        vector using 3 linear functions: Keys, Querries, and Values. Each
+        embedding vector's querry is represents what kind of information it is
+        looking for. Going back to our example, perhaps dog asks "Are there any
+        adjectives near me?". The keys represent what information each token
+        has. In this case, fluffy and brown both are adjecitves. Values
+        represent the actual information to be moved. The value vector for
+        fluffy and brown would contain the information of these two adjectives.
+      </p>
+      <p>
+        In the modern interpertation of attention, there are two different
+        circuits at play. The Querry-Key (QK) circuit's job is to decide which
+        information should be moved where. The Output-Value (OV) circuit's job
+        is to move said information. Let's start with the QK circuit.
+      </p>
+      <p>
+        This circuit relies upon the dot product. The dot product measures the
+        alignment between two vectors. If the vectors are at a 90° angle, then
+        the dot product is zero. If the vectors point in the same direction, the
+        dot product is equals the two vectors magnitudes multiplied together.
+        The general formula for the dot product is: $\vec{a} \cdot \vec{b} =
+        \|\vec{a}\| \|\vec{b}\| \cos(\theta)$. As it turns out, there's a
+        surprising computational trick. Instead of explicitly computing
+        magnitudes and angles, we can simply sum the product of the two vectors
+        corresponding components together as such: $\vec{a} \cdot \vec{b} =
+        \sum_{i=1}^{n} a_i b_i $.<d-footnote
+          >Check out 3Blue1Brown's excellent
+          <a href="https://www.3blue1brown.com/lessons/dot-products">post</a> on
+          this surprising and beautiful fact.</d-footnote
+        >
+      </p>
+      <p>
+        The dot product is the natural choice to measure the agreement of keys
+        and querries. Not only is it much more computationally efficient
+        compared to alternatives like distance, but these angle tends to be a
+        much better predicter of simarility than distance in embedding spaces.
+      </p>
+      <p>
+        Now remember, we only want information to flow from earlier "source"
+        tokens positions to later "destination" tokens as we don't want the
+        model to peek at the answer during training. Thus, we compute all the
+        dot products of all keys and querries where the querry token occurs
+        later in the sequence than the key token. After applying a noramlization
+        factor,<d-footnote
+          >If you're comfortable with some statistics, each term in the
+          dotproduct, $\sum_{i=1}^{d_{QK}} q_i k_i$ has a variance of 1 from our
+          layernorm. Thus, adding summing these gives the attention variance
+          $d_{QK}$ (dimension of our QK embedding space). Thus, we need to
+          multiply this score by $\frac{1}{sqrt(d_{QK})}$ to keep unit variance.
+        </d-footnote>
+        we apply the softmax function such that all the We can visualize these
+        dot products with an attention pattern. Below is an attention pattern on
+        our prompt from GPT-2-small:
+      </p>
+      <p>In this pattern,</p>
+
       <h2>A quick overview of MusicGen</h2>
       <p>
         Differences in modality between text - RVQ, encodeoc and allat as well

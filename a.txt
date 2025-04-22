@@ -1,1 +1,14 @@
 emphasize miracousness in intro - understanding deep learning
+
+weights bias
+overfitting - more an issue in these more classical machine learning problems??????
+
+mnemonic
+
+details I glossed over: ROPE positional
+
+a brief note on training 
+
+attnetion dimension
+
+key/querry embedding space
