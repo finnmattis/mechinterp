@@ -9,6 +9,144 @@
       .byline.grid div:nth-child(3) {
         visibility: hidden;
       }
+
+      .player-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        max-width: 400px;
+        width: 100%;
+        background-color: #f9fafb;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .album-flipper {
+        position: relative;
+        width: 256px;
+        height: 256px;
+        margin-bottom: 1.5rem;
+        perspective: 1000px;
+      }
+
+      .album-cover {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-size: cover;
+        background-position: center;
+        transition: transform 0.7s;
+      }
+
+      .flip-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #1f2937;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .flip-button:hover {
+        background-color: #374151;
+      }
+
+      .prev-button {
+        left: -20px;
+      }
+
+      .next-button {
+        right: -20px;
+      }
+
+      .song-info {
+        width: 100%;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .song-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+      }
+
+      .song-artist {
+        color: #6b7280;
+      }
+
+      .audio-status {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        width: 100%;
+      }
+
+      .play-button {
+        padding: 0.75rem;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .play-button:hover {
+        background-color: #1d4ed8;
+      }
+
+      .compression-toggle {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background-color: #e5e7eb;
+        border: none;
+        border-radius: 9999px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .compression-toggle:hover {
+        background-color: #d1d5db;
+      }
+
+      .toggle-icon {
+        margin-right: 0.5rem;
+      }
+
+      .icon-left {
+        color: #6b7280;
+      }
+
+      .icon-right {
+        color: #10b981;
+      }
+
       body {
         font-family: sans-serif;
         padding: 40px;
@@ -1116,6 +1254,7 @@
         compared to alternatives like distance, but these angle tends to be a
         much better predicter of simarility than distance in embedding spaces.
       </p>
+      <p>MENTION "ATTEND" word</p>
       <p>
         Now remember, we only want information to flow from earlier "source"
         tokens positions to later "destination" tokens as we don't want the
@@ -1133,15 +1272,178 @@
         dot products with an attention pattern. Below is an attention pattern on
         our prompt from GPT-2-small:
       </p>
-      <p>In this pattern,</p>
+      <!-- HERE -->
+      <p>
+        Here, fluffy and brown attend to dog. OV Circuit - quick and also
+        mention attention heads
+      </p>
 
       <h2>A quick overview of MusicGen</h2>
       <p>
-        Differences in modality between text - RVQ, encodeoc and allat as well
-        as cross-attention stuff
+        In recent years, the transformer architecture has enabled models that
+        can generate music from text prompts. Among open-source options, Meta's
+        MusicGen stands out as the leader. The table below, taken from the
+        MusicGen paper, compares its performance to other models. Pay particular
+        attention to the OVL (Overall) and REL (Relevance) columns—these capture
+        human evaluations of audio quality and how well the generated music
+        aligns with the input prompt.
       </p>
+      <!-- Need these divs around this img for some reason to prevent tons of whitespace on the bottom-->
+      <div><img src="media/musiceval.png" width="100%" /></div>
+      <p>
+        Due to its strength and also simplicity compared to its contemporaries
+        such as MusicLM, MusicGen will serve as the object of our study.
+      </p>
+      <p>
+        MusicGen is based on an encoder-decoder transformer architecture. The
+        key difference between MusicGen and traditional text-based transformers
+        lies in the units it operates on. Music is fundementally different than
+        text. While text is symbolic and discrete, sound is a continuous
+        signal—vibrations in the air. On a computer, these vibrations are
+        captured by recording the amplitude of the waveform thousands of times
+        per second, a process known as sampling.
+      </p>
+      <p>
+        One way we could train a music-based transformer would be to quantize
+        these samples. Here, quantizing simply means snapping continuous values
+        onto a grid of discrete values. Unfortunately, this isn't sufficient. A
+        typical sampling rate of 32kHz (thousand times per second) would mean
+        32,0000 autoregressive steps to generate a single second of audio.
+        Clearly, we need a way to cut down on the length of our input analogous
+        to the process of tokenization for language models.
+      </p>
+      <p>
+        This time, our compression method will not be algorithm but rather
+        another model. In this case, Meta's own Encodec model. EnCodec is a
+        convolutional neural network that transforms raw audio into a series of
+        discrete embedding vectors. For each second of audio, it produces 50
+        embeddings, each 128 dimensions wide. Listen below to see the difference
+        between the original and compressed audio.
+      </p>
+      <div style="display: flex; justify-content: center">
+        <div class="player-container">
+          <div class="album-flipper">
+            <div class="album-cover"></div>
+
+            <button class="flip-button prev-button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                <line x1="5" y1="19" x2="5" y2="5"></line>
+              </svg>
+            </button>
+            <button class="flip-button next-button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19"></line>
+              </svg>
+            </button>
+          </div>
+
+          <audio id="audio-player"></audio>
+
+          <div class="song-info">
+            <h2 class="song-title"></h2>
+            <p class="song-artist"></p>
+            <p class="audio-status"></p>
+          </div>
+
+          <div class="controls">
+            <button class="play-button">
+              <svg
+                id="play-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <svg
+                id="pause-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="display: none"
+              >
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+            </button>
+
+            <button class="compression-toggle">
+              <svg
+                id="toggle-left"
+                class="toggle-icon icon-left"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="1" y="5" width="22" height="14" rx="7" ry="7"></rect>
+                <circle cx="8" cy="12" r="3"></circle>
+              </svg>
+              <svg
+                id="toggle-right"
+                class="toggle-icon icon-right"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="display: none"
+              >
+                <rect x="1" y="5" width="22" height="14" rx="7" ry="7"></rect>
+                <circle cx="16" cy="12" r="3"></circle>
+              </svg>
+              <span id="toggle-text">Original</span>
+            </button>
+          </div>
+        </div>
+      </div>
       <p>Delay pattern</p>
-      <h2>Initial investigation: vector space</h2>
+      Unlike the algorithmic tokenizers, another ML model compresses
+      <h2>Probing and Steering Vectors</h2>
+      <p>Alright, now we're ready to</p>
     </d-article>
 
     <d-appendix
@@ -1187,5 +1489,6 @@
     <d-bibliography src="bibliography.bib"></d-bibliography>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="housing.js"></script>
+    <script src="encodec.js"></script>
   </body>
 </html>

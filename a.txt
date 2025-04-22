@@ -1,5 +1,7 @@
 emphasize miracousness in intro - understanding deep learning
 
+mention convolution
+
 weights bias
 overfitting - more an issue in these more classical machine learning problems??????
 
