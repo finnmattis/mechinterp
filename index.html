@@ -1296,9 +1296,9 @@
         can generate music from text prompts. Among open-source options, Meta's
         MusicGen stands out as the leader. The table below, taken from the
         MusicGen paper, compares its performance to other models. Pay particular
-        attention to the OVL (Overall) and REL (Relevance) columns—these capture
-        human evaluations of audio quality and how well the generated music
-        aligns with the input prompt.
+        attention to the OVL (Overall) and REL (Relevance) columns—for these
+        metrics, human evaluators were asked to rate the quality and adherence
+        to the prompt of the generated music on a scale of 1-100.
       </p>
       <!-- Need these divs around this img for some reason to prevent tons of whitespace on the bottom-->
       <div><img src="media/musiceval.png" width="100%" /></div>
@@ -1319,18 +1319,28 @@
         One way we could train a music-based transformer would be to quantize
         these samples. Here, quantizing simply means snapping continuous values
         onto a grid of discrete values. Unfortunately, this isn't sufficient. A
-        typical sampling rate of 32kHz (thousand times per second) would mean
-        32,0000 autoregressive steps to generate a single second of audio.
-        Clearly, we need a way to cut down on the length of our input analogous
-        to the process of tokenization for language models.
+        typical sampling rate such as 32kHz (meaning 32 thousand samples per
+        second) would mean 32,0000 autoregressive steps to generate a single
+        second of audio. Clearly, we need a way to cut down on the length of our
+        input analogous to the process of tokenization for language models.
       </p>
       <p>
         This time, our compression method will not be algorithm but rather
-        another model. In this case, Meta's own Encodec model. EnCodec is a
-        convolutional neural network that transforms raw audio into a series of
-        discrete embedding vectors. For each second of audio, it produces 50
-        embeddings, each 128 dimensions wide. Listen below to see the difference
-        between the original and compressed audio.
+        another model namely Meta's own audio codec EnCodec. Encodec is a
+        convolutional neural network that transforms each second of audio into
+        50 embedding vectors, each 128 dimensions wide. In order to compress
+        these embedding vectors further the model also uses a method called
+        residual vector quantization (RVQ).
+      </p>
+      <p>
+        "curse of dimensionality"
+        
+        
+        RVQ extends traditional quantization, by repeating the process several
+        times. First, the vector is snapped to a grid. Then, you take note of
+        the residual, the difference between vector and its snapped position,
+        and quantize that vector. Repeating this process several times gives
+        you... mention codbeook
       </p>
       <div class="player-container">
         <div class="album-flipper">
