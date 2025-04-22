@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const song = songs[currentSongIndex];
     const suffix = isCompressed ? "_comp.wav" : ".wav";
-    audioPlayer.src = `${song.filename}${suffix}`;
+    audioPlayer.src = `media/${song.filename}${suffix}`;
 
     audioStatus.textContent = isCompressed
       ? "Compressed Audio"
