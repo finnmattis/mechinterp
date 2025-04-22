@@ -50,7 +50,7 @@ const layout = {
 Plotly.newPlot("activation-functions", data, layout);
 
 window.addEventListener("DOMContentLoaded", function () {
-  fetch("house_data.json")
+  fetch("media/house_data.json")
     .then((response) => response.json())
     .then((data) => {
       const area = data.map((d) => d["Gr Liv Area"]);

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="icon" href="favicon.png" type="image/png" />
+    <link rel="icon" href="media/favicon.png" type="image/png" />
     <meta charset="utf-8" />
-    <script src="template.v2.js"></script>
+    <script src="scripts/template.v2.js"></script>
     <title>Music Interpretability</title>
     <style>
       .byline.grid div:nth-child(3) {
@@ -12,22 +12,16 @@
 
       .player-container {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 2rem;
-        max-width: 400px;
+        max-width: 700px;
         width: 100%;
-        background-color: #f9fafb;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        background: transparent;
       }
 
       .album-flipper {
         position: relative;
-        width: 256px;
-        height: 256px;
-        margin-bottom: 1.5rem;
-        perspective: 1000px;
+        width: 300px;
+        height: 300px;
       }
 
       .album-cover {
@@ -36,12 +30,38 @@
         height: 100%;
         border-radius: 12px;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
         background-size: cover;
         background-position: center;
-        transition: transform 0.7s;
+      }
+
+      .player-controls {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 2rem;
+      }
+
+      .song-info {
+        margin-bottom: 2rem;
+      }
+
+      .song-title {
+        font-size: 1.75rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+
+      .song-artist {
+        font-size: 1.25rem;
+        color: #6b7280;
+        margin-bottom: 0.75rem;
+      }
+
+      .audio-status {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #4b5563;
       }
 
       .flip-button {
@@ -59,6 +79,7 @@
         align-items: center;
         justify-content: center;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 10;
       }
 
       .flip-button:hover {
@@ -73,38 +94,14 @@
         right: -20px;
       }
 
-      .song-info {
-        width: 100%;
-        margin-bottom: 1rem;
-        text-align: center;
-      }
-
-      .song-title {
-        font-size: 1.25rem;
-        font-weight: bold;
-        margin-bottom: 0.25rem;
-      }
-
-      .song-artist {
-        color: #6b7280;
-      }
-
-      .audio-status {
-        margin-top: 0.5rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-
       .controls {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        width: 100%;
+        gap: 1.5rem;
       }
 
       .play-button {
-        padding: 0.75rem;
+        padding: 1rem;
         background-color: #2563eb;
         color: white;
         border: none;
@@ -123,7 +120,7 @@
       .compression-toggle {
         display: flex;
         align-items: center;
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1.25rem;
         background-color: #e5e7eb;
         border: none;
         border-radius: 9999px;
@@ -147,10 +144,25 @@
         color: #10b981;
       }
 
+      @media (max-width: 700px) {
+        .player-container {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .player-controls {
+          padding-left: 0;
+          padding-top: 1.5rem;
+          align-items: center;
+          text-align: center;
+        }
+      }
+
       body {
         font-family: sans-serif;
         padding: 40px;
       }
+
       iframe {
         border: none;
         height: 1100px;
@@ -516,7 +528,7 @@
         this:
         <d-code block language="python">&#10;x=5&#10;y=3&#10;print(x+y)</d-code
         >Researchers are instead faced with programs that look like this:
-        <img src="numbas.png" width="100%" />
+        <img src="media/numbas.png" width="100%" />
         <figcaption>
           These are 297 of AlexNet's weights. AlexNet has 61 million weights.
           Today's systems can have upwards of 1 trillion.
@@ -887,7 +899,7 @@
         digit from 0 to 9.<d-cite bibtex-key="lecun1998mnist"></d-cite>
         Let's take a look at some examples:
       </p>
-      <img src="mnist.png" width="100%" />
+      <img src="media/mnist.png" width="100%" />
       <p>
         Now, as I mentioned before, the key difference between the housing
         problem and more realistic machine learning tasks is the complexity of
@@ -1068,7 +1080,7 @@
         one of our numbers. Let's see the results.
       </p>
       <div style="display: flex; justify-content: center">
-        <img src="smearing.png" width="50%" />
+        <img src="media/smearing.png" width="50%" />
       </div>
       <p>
         Alright, that's not great. So what happened here? Each picture looks
@@ -1094,7 +1106,7 @@
         RNNs:
       </p>
       <div style="display: flex; justify-content: center">
-        <img src="rnn.png" />
+        <img src="media/rnn.png" />
       </div>
       <p>
         More complicated architectures such as Long-Short Term Memory (LSTM) or
@@ -1105,7 +1117,7 @@
         perform on our digit generation task:
       </p>
       <div style="display: flex; justify-content: center">
-        <img src="lstm.png" width="50%" />
+        <img src="media/lstm.png" width="50%" />
       </div>
       <p>
         Much better. But still not great. In general RNNs have one fatal
@@ -1208,7 +1220,7 @@
         and makes training more reliable. Here's a complete picture of the
         transformer.
       </p>
-      <img src="transformer.png" width="40%" />
+      <img src="media/transformer.png" width="40%" />
       <h5>Attention</h5>
       <p>
         Now let's dive into the attention mechanism. As stated earlier, the goal
@@ -1320,47 +1332,45 @@
         embeddings, each 128 dimensions wide. Listen below to see the difference
         between the original and compressed audio.
       </p>
-      <div style="display: flex; justify-content: center">
-        <div class="player-container">
-          <div class="album-flipper">
-            <div class="album-cover"></div>
+      <div class="player-container">
+        <div class="album-flipper">
+          <div class="album-cover"></div>
 
-            <button class="flip-button prev-button">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polygon points="19 20 9 12 19 4 19 20"></polygon>
-                <line x1="5" y1="19" x2="5" y2="5"></line>
-              </svg>
-            </button>
-            <button class="flip-button next-button">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polygon points="5 4 15 12 5 20 5 4"></polygon>
-                <line x1="19" y1="5" x2="19" y2="19"></line>
-              </svg>
-            </button>
-          </div>
+          <button class="flip-button prev-button">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="19 20 9 12 19 4 19 20"></polygon>
+              <line x1="5" y1="19" x2="5" y2="5"></line>
+            </svg>
+          </button>
+          <button class="flip-button next-button">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="5 4 15 12 5 20 5 4"></polygon>
+              <line x1="19" y1="5" x2="19" y2="19"></line>
+            </svg>
+          </button>
+        </div>
 
-          <audio id="audio-player"></audio>
-
+        <div class="player-controls">
           <div class="song-info">
             <h2 class="song-title"></h2>
             <p class="song-artist"></p>
@@ -1372,8 +1382,8 @@
               <svg
                 id="play-icon"
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="28"
+                height="28"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -1386,8 +1396,8 @@
               <svg
                 id="pause-icon"
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="28"
+                height="28"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -1439,9 +1449,11 @@
             </button>
           </div>
         </div>
+
+        <audio id="audio-player"></audio>
       </div>
+
       <p>Delay pattern</p>
-      Unlike the algorithmic tokenizers, another ML model compresses
       <h2>Probing and Steering Vectors</h2>
       <p>Alright, now we're ready to</p>
     </d-article>
@@ -1488,7 +1500,7 @@
     </d-appendix>
     <d-bibliography src="bibliography.bib"></d-bibliography>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <script src="housing.js"></script>
-    <script src="encodec.js"></script>
+    <script src="scripts/housing.js"></script>
+    <script src="scripts/encodec.js"></script>
   </body>
 </html>

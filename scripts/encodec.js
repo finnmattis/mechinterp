@@ -17,12 +17,11 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentSongIndex = 0;
   let isPlaying = false;
   let isCompressed = false;
-  let currentPlaybackTime = 0;
 
   const songs = [
     {
       title: "Sonata No. 4",
-      artist: "Scriabin (Ashkenazy)",
+      artist: "Alexander Scriabin (Ashkenazy)",
       filename: "scriabin",
       coverArt: "scriabin_art.jpg",
     },
@@ -42,14 +41,14 @@ document.addEventListener("DOMContentLoaded", function () {
       title: "Blinding Lights",
       artist: "The Weeknd",
       filename: "lights",
-      coverArt: "lights_art.jpg",
+      coverArt: "lights_art.webp",
     },
   ];
 
   function updatePlayer() {
     const song = songs[currentSongIndex];
 
-    albumCover.style.backgroundImage = `url(${song.coverArt})`;
+    albumCover.style.backgroundImage = `url(media/${song.coverArt})`;
 
     songTitle.textContent = song.title;
     songArtist.textContent = song.artist;
@@ -58,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
       : "Original Audio";
 
     const suffix = isCompressed ? "_comp.wav" : ".wav";
-    audioPlayer.src = `${song.filename}${suffix}`;
+    audioPlayer.src = `media/${song.filename}${suffix}`;
 
     if (isPlaying) {
       audioPlayer.play().catch((e) => console.error("Playback failed:", e));
@@ -132,10 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
     currentSongIndex = (currentSongIndex + 1) % songs.length;
     updatePlayer();
   }
-
-  audioPlayer.addEventListener("timeupdate", function () {
-    currentPlaybackTime = audioPlayer.currentTime;
-  });
 
   playButton.addEventListener("click", togglePlay);
   compressionToggle.addEventListener("click", toggleCompression);
